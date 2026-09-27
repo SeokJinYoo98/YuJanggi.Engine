@@ -134,7 +134,8 @@ Unity에서는 위 객체 구성과 초기화를 컴포넌트의 초기화 시�
 | `Handicap()` | 보드를 바꾸지 않고 한 수 쉼 기록을 추가하며 차례 변경 |
 | `GiveUp()` | 현재 차례의 팀을 패자로 대국 종료 이벤트 발생 |
 | `Tick(deltaTime)` | 초 단위 경과 시간을 받아 턴 제한 시간 갱신; 자동 실행되지 않음 |
-| `Rule.FindWays(board, selection)` | 선택한 기물의 합법·불법 이동 후보를 Selection에 설정 |
+| `Rule.GetMovableCells(board, from, legalCells, illegalCells)` | 지정 위치의 합법·불법 이동 후보를 호출자가 제공한 서로 다른 두 리스트에 덮어씀 |
+| `Rule.HasAnyLegalMove(board, team)` | 해당 팀에 합법 수가 하나라도 있는지 확인 |
 
 실제 대국 이동은 `MatchModel.TryMove`를 사용합니다. `BoardModel.DoMove`와 `SetPiece`는
 상태를 직접 변경하는 저수준 API이므로 차례·합법 수·점수·기록 검증을 대신하지 않습니다.
@@ -155,7 +156,8 @@ Unity에서는 위 객체 구성과 초기화를 컴포넌트의 초기화 시�
 | `YuJanggi.Core.V2.Domain` | `Pos`, `PlayerTeam`, `PieceType`, `Formation`, `Selection`, 이동·결과 모델 |
 | `YuJanggi.Core.V2.Board` | `BoardModel`, `IBoardModel`, `PieceModel` |
 | `YuJanggi.Core.V2.Match` | `MatchModel`, `Turn`, `Record`, `Score`, `MatchEvents` |
-| `YuJanggi.Core.V2.Rule` | `JanggiRule`, `MovementRule`, `PalaceRule` |
+| `YuJanggi.Core.V2.Rule` | `JanggiRule`, `IJanggiRule` 외부 진입점 |
+| `YuJanggi.Core.V2.JanggiRule` | 내부 `JanggiRulePipeline`, Context, Step, 장군 검사 구현 |
 | `YuJanggi.Core.V2.MovementRule` | 기물별 이동 구현 |
 
 이전 Core를 사용하던 코드는 `YuJanggi.Core.*` 참조를 실제 V2 네임스페이스에 맞춰 변경합니다.
@@ -181,6 +183,7 @@ YuJanggi.Core.V2/
   Board/                  # 보드와 기물 상태
   Domain/                 # 좌표·팀·이동·세션 계약
   Match/                  # 대국 진행과 규칙·기물 이동
+  JanggiRule/             # 내부 이동 규칙 Pipeline과 재사용 계산 Context
 YuJanggi.Core.V2.Tests/    # MSTest 기반 .NET 테스트
 scripts/Prepare-Upm.ps1   # UPM 소스 생성
 upm/                     # Unity 패키지 정의와 Runtime asmdef
@@ -190,7 +193,7 @@ upm/                     # Unity 패키지 정의와 Runtime asmdef
 
 - 보드 생성자는 크기를 받지만 궁성과 초기 배치는 표준 9×10 좌표를 전제로 하므로 기본 크기를 사용합니다.
 - 규칙 판정은 내부 버퍼와 보드의 임시 이동·복원을 사용합니다. 같은 대국 인스턴스에 대한 호출은 직렬화합니다.
-- `CountLegalMove`는 첫 번째로 발견한 이동 가능한 기물의 후보 수를 반환하므로 전체 합법 수의 합계로 사용하지 않습니다.
+- `HasAnyLegalMove`는 첫 이동 가능한 기물을 찾으면 true를 반환합니다. 전체 합법 수의 개수를 세지 않습니다.
 - `GameResult.Draw`와 `Score`가 정의되어 있어도 현재 `MatchModel`이 이 종료 결과를 자동 판정하는 것은 아닙니다.
 - 리플레이 기록 API는 제공하지만 화면 재생과 보드 적용은 소비자 측에서 구성합니다.
 

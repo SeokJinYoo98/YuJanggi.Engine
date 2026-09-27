@@ -1,8 +1,8 @@
-namespace YuJanggi.Core.V2.MovementRule
+namespace YuJanggi.Core.JanggiRule.Movement
 {
-    public class SoldierMovement : PatternMovement
+    internal class SoldierMovement : PatternMovement
     {
-        public SoldierMovement()
+        internal SoldierMovement()
         {
             _steps = new Step[][]
             {

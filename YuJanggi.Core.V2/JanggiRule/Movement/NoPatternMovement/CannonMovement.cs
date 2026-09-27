@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 
-namespace YuJanggi.Core.V2.MovementRule
+namespace YuJanggi.Core.JanggiRule.Movement
 {
     using Board;
     using Domain;
 
-    public class CannonMovement : Movement
+    internal class CannonMovement : Movement
     {
         //
-        public override void FindWays(IBoardModel board, Pos from, List<Pos> buffer)
+        internal override void FindWays(IJanggiBoard board, Pos from, List<Pos> buffer)
         {
             var piece = board.GetPiece(from);
             var team = piece.Team;

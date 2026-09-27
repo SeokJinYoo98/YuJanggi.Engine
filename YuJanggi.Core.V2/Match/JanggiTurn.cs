@@ -1,8 +1,8 @@
 using System;
-namespace YuJanggi.Core.V2.Match
+namespace YuJanggi.Core.Match
 {
     using Domain;
-    public class Turn
+    public class JanggiTurn
     {
         public event Action<PlayerTeam>                     ?OnTurnChanged;
         public event Action<(PlayerTeam team, int time)>    ?OnTimeChanged;
@@ -13,7 +13,7 @@ namespace YuJanggi.Core.V2.Match
         private bool _isEnd = false;
         private bool _noTime = false;
         
-        public Turn(float maxTime)
+        public JanggiTurn(float maxTime)
         {
             _maxTurnTime = maxTime;
             _noTime = (int)_maxTurnTime == 0;

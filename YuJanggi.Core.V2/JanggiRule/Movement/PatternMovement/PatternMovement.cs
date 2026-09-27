@@ -1,14 +1,14 @@
 using System.Collections.Generic;
-namespace YuJanggi.Core.V2.MovementRule
+namespace YuJanggi.Core.JanggiRule.Movement
 {
     using Board;
     using Domain;
 
-    public class PatternMovement : Movement
+    internal class PatternMovement : Movement
     {
         //
-        public override void FindWays(
-            IBoardModel board,
+        internal override void FindWays(
+            IJanggiBoard board,
             Pos from,
             List<Pos> buffer)
         {
@@ -21,7 +21,7 @@ namespace YuJanggi.Core.V2.MovementRule
         
         private void ProcessDirection(
             List<Pos> buffer,
-            IBoardModel board,
+            IJanggiBoard board,
             PlayerTeam team,
             Pos pos,
             Step[] steps)
@@ -44,12 +44,12 @@ namespace YuJanggi.Core.V2.MovementRule
                 }
             }
         }
-        private bool IsBlocked(IBoardModel board, PlayerTeam team, Pos pos)
+        private bool IsBlocked(IJanggiBoard board, PlayerTeam team, Pos pos)
         {
             var result = CheckCell(board, team, pos);
             return result != StepResult.Empty;
         }
-        private bool CanLand(IBoardModel board, PlayerTeam team, Pos pos)
+        private bool CanLand(IJanggiBoard board, PlayerTeam team, Pos pos)
         {
             var result = CheckCell(board, team, pos);
             return (result == StepResult.Empty) || (result == StepResult.Enemy);

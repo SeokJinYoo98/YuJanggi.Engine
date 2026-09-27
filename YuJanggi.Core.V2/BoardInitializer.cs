@@ -1,9 +1,9 @@
-namespace YuJanggi.Core.V2.Board
+namespace YuJanggi.Core.Board
 {
     using Domain;
     internal class BoardInitializer
     {
-        public  static void SetUpPieces(IBoardModel board, Formation cho, Formation han)
+        public  static void SetUpPieces(IJanggiBoard board, Formation cho, Formation han)
         {
             int pieceId = 0;
             SpawnCho(board, PlayerTeam.Cho, ref pieceId);
@@ -12,7 +12,7 @@ namespace YuJanggi.Core.V2.Board
             ApplyFormationCho(board, cho);
             ApplyFormationHan(board, han);
         }
-        private static void SpawnCho(IBoardModel board, PlayerTeam cho, ref int pieceId)
+        private static void SpawnCho(IJanggiBoard board, PlayerTeam cho, ref int pieceId)
         {
             Spawn(board, cho, PieceType.Chariot, 0, 0, ref pieceId);
             Spawn(board, cho, PieceType.Chariot, 8, 0, ref pieceId);
@@ -37,7 +37,7 @@ namespace YuJanggi.Core.V2.Board
             Spawn(board, cho, PieceType.Soldier, 6, 3, ref pieceId);
             Spawn(board, cho, PieceType.Soldier, 8, 3, ref pieceId);
         }
-        private static void SpawnHan(IBoardModel board, PlayerTeam han, ref int pieceId)
+        private static void SpawnHan(IJanggiBoard board, PlayerTeam han, ref int pieceId)
         {
             Spawn(board, han, PieceType.Chariot, 0, 9, ref pieceId);
             Spawn(board, han, PieceType.Chariot, 8, 9, ref pieceId);
@@ -62,9 +62,9 @@ namespace YuJanggi.Core.V2.Board
             Spawn(board, han, PieceType.Soldier, 6, 6, ref pieceId);
             Spawn(board, han, PieceType.Soldier, 8, 6, ref pieceId);
         }  
-        private static void Spawn(IBoardModel board, PlayerTeam team, PieceType type, int x, int z, ref int pieceId)
+        private static void Spawn(IJanggiBoard board, PlayerTeam team, PieceType type, int x, int z, ref int pieceId)
             => board.SetPiece(new Pos(x, z), new PieceModel(type, team, pieceId++));
-        private static void ApplyFormationCho(IBoardModel board, Formation cho)
+        private static void ApplyFormationCho(IJanggiBoard board, Formation cho)
         {
             if (cho == Formation.EHHE) return;
 
@@ -100,7 +100,7 @@ namespace YuJanggi.Core.V2.Board
                 board.SetPiece(left_2, swap1);
             }
         }
-        private static void ApplyFormationHan(IBoardModel board, Formation han)
+        private static void ApplyFormationHan(IJanggiBoard board, Formation han)
         {
             if (han == Formation.EHHE) return;
 

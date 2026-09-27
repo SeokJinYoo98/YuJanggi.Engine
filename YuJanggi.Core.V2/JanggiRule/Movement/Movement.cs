@@ -1,19 +1,19 @@
 using System.Collections.Generic;
-namespace YuJanggi.Core.V2.MovementRule
+namespace YuJanggi.Core.JanggiRule.Movement
 {
     using Board;
     using Domain;
 
-    public enum Step
+    internal enum Step
     { Right, Left, Up, Down, RightUp, RightDown, LeftUp, LeftDown }
-    public enum StepResult
+    internal enum StepResult
     { Block, Empty, Enemy, Team }
-    public abstract class Movement
+    internal abstract class Movement
     {
 
         //
-        public abstract void FindWays(
-            IBoardModel board,
+        internal abstract void FindWays(
+            IJanggiBoard board,
             Pos from,
             List<Pos> buffer);
         //
@@ -48,7 +48,7 @@ namespace YuJanggi.Core.V2.MovementRule
         }
 
         protected static StepResult CheckCell(
-            IBoardModel board,
+            IJanggiBoard board,
             PlayerTeam team,
             Pos pos)
         {

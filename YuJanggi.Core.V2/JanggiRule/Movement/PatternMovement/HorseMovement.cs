@@ -1,8 +1,8 @@
-namespace YuJanggi.Core.V2.MovementRule
+namespace YuJanggi.Core.JanggiRule.Movement
 {
-    public class Horsemovement : PatternMovement
+    internal class HorseMovement : PatternMovement
     {
-        public Horsemovement()
+        internal HorseMovement()
         {
             _steps = new Step[][]
             {

@@ -1,8 +1,8 @@
-namespace YuJanggi.Core.V2.MovementRule
+namespace YuJanggi.Core.JanggiRule.Movement
 {
-    public class ElephantMovement : PatternMovement
+    internal class ElephantMovement : PatternMovement
     {
-        public ElephantMovement()
+        internal ElephantMovement()
         {
             _steps = new Step[][]
             {

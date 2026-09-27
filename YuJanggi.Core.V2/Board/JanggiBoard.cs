@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 
-namespace YuJanggi.Core.V2.Board
+namespace YuJanggi.Core.Board
 {
     using Domain;
-    public interface IBoardModel 
+    internal interface IJanggiBoard 
     {
 
         public int WIDTH { get; }
@@ -18,12 +18,12 @@ namespace YuJanggi.Core.V2.Board
         public void         UndoMove(in MoveRecord moveRecord);
     }
 
-    public class BoardModel : IBoardModel
+    internal class JanggiBoard : IJanggiBoard
     {
         public int WIDTH  => _width;
         public int HEIGHT => _height;
 
-        public BoardModel(int width = 9, int height = 10)
+        public JanggiBoard(int width = 9, int height = 10)
         {
             _width = width; _height = height;
             _board = new CellData[_width, _height];

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace YuJanggi.Core.V2.Match
+namespace YuJanggi.Core.Match
 {
     using Domain;
-    public class Record
+    public class JanggiRecord
     {
         public event Action<int, int>  ?OnRecordChanged;
         public bool IsLive          => Count - 1 == _currIdx;

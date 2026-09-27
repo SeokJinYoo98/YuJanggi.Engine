@@ -1,8 +1,8 @@
-namespace YuJanggi.Core.V2.MovementRule
+namespace YuJanggi.Core.JanggiRule.Movement
 {
-    public class KingGuardMovement : PatternMovement
+    internal class KingGuardMovement : PatternMovement
     {
-        public KingGuardMovement()
+        internal KingGuardMovement()
         {
             _steps = new Step[][]
             {

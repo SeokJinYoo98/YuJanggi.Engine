@@ -2,8 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace YuJanggi.Core.V2.Domain
+namespace YuJanggi.Core.Domain
 {
+    public interface ILiveEngine :
+        IMatchControllerQuery,
+        IMatchSessionQuery,
+        IMatchSessionCommand
+    {
+    }
     public interface IGameResultContext
     {
         GameResultInfo? GameResult { get; }
@@ -37,15 +43,7 @@ namespace YuJanggi.Core.V2.Domain
         public string OpponentNickname;
     }
 
-    public static class NetworkSessionStore
-    {
-        public static NetworkSessionInfo Current;
-    }
 
-    public static class GameSessionStore
-    {
-        public static GameSessionInfo Current;
-    }
 
     public enum Formation { HEHE, EHEH, EHHE, HEEH }
     public enum PlayerType { Local, AI, Network }

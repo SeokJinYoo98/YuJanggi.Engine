@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace YuJanggi.Core.V2.Domain
+namespace YuJanggi.Core.Domain
 {
     using Board;
     public readonly struct SelectionInfo
@@ -17,18 +17,24 @@ namespace YuJanggi.Core.V2.Domain
 
     public class Selection
     {
-        private readonly HashSet<Pos> _legalSet       = new(20);
-        private readonly List<Pos>    _legalCells     = new(20);
-        private readonly List<Pos>    _illLegalCells  = new(20);
-        public IReadOnlyList<Pos> LegalCells   => _legalCells;
-        public IReadOnlyList<Pos> IllegalCells => _illLegalCells;
-        public bool               HasSelection => FromPos != Pos.Invalid;
-        public Pos                FromPos = Pos.Invalid;
+        private readonly HashSet<Pos> _legalSet = new(20);
+        private readonly List<Pos> _legalCells = new(20);
+        private readonly List<Pos> _illegalCells = new(20);
+
+        public IReadOnlyList<Pos> LegalCells => _legalCells;
+        public IReadOnlyList<Pos> IllegalCells => _illegalCells;
+
+        public Pos FromPos { get; private set; } = Pos.Invalid;
+
+        public bool HasSelection =>
+            FromPos != Pos.Invalid;
         public void Clear()
         {
+            FromPos = Pos.Invalid;
+
             _legalSet.Clear();
             _legalCells.Clear();
-            _illLegalCells.Clear();
+            _illegalCells.Clear();
         }
         public void SetMovable(List<Pos> legalCells, List<Pos> illegalCells)
         {
@@ -39,11 +45,10 @@ namespace YuJanggi.Core.V2.Domain
                 _legalSet.Add(pos);
             }
 
-            _illLegalCells.AddRange(illegalCells);
+            _illegalCells.AddRange(illegalCells);
         }
         public bool IsMovable(Pos pos) => _legalSet.Contains(pos);
     }
-
     public readonly struct MoveContext
     {
         public static MoveContext Handicap => new(MoveRecord.None, false, false);

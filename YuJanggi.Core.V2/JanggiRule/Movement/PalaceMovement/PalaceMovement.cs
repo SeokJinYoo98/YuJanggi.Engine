@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-namespace YuJanggi.Core.V2.MovementRule
+namespace YuJanggi.Core.JanggiRule.Movement
 {
     using Board;
     using Domain;
 
-    public class PalaceMovement : Movement
+    internal class PalaceMovement : Movement
     {
         //
-        public override void FindWays(IBoardModel board, Pos from, List<Pos> buffer)
+        internal override void FindWays(IJanggiBoard board, Pos from, List<Pos> buffer)
         {
             var selectedPiece = board.GetPiece(from);
             var team = selectedPiece.Team;
@@ -57,26 +57,26 @@ namespace YuJanggi.Core.V2.MovementRule
             };
         }
      
-        private void Default(IBoardModel board, PlayerTeam team, Pos pos, List<Pos> ways)
+        private void Default(IJanggiBoard board, PlayerTeam team, Pos pos, List<Pos> ways)
         {
             ProcessPalaceMove(board, team, pos, ways, DefaultStep);
         }
 
-        private void Chariot(IBoardModel board, PlayerTeam team, Pos pos, List<Pos> ways)
+        private void Chariot(IJanggiBoard board, PlayerTeam team, Pos pos, List<Pos> ways)
         {
             ProcessPalaceMove(board, team, pos, ways, ChariotStep);
         }
 
-        private void Cannon(IBoardModel board, PlayerTeam team, Pos pos, List<Pos> ways)
+        private void Cannon(IJanggiBoard board, PlayerTeam team, Pos pos, List<Pos> ways)
         {
             ProcessPalaceMove(board, team, pos, ways, CannonStep);
         }
         private void ProcessPalaceMove(
-            IBoardModel board,
+            IJanggiBoard board,
             PlayerTeam team,
             Pos pos,
             List<Pos> ways,
-            Func<IBoardModel, PlayerTeam, Step, Pos, List<Pos>, bool> handler)
+            Func<IJanggiBoard, PlayerTeam, Step, Pos, List<Pos>, bool> handler)
         {
             if (!_palaceLinks.TryGetValue(pos, out var steps))
                 return;
@@ -87,7 +87,7 @@ namespace YuJanggi.Core.V2.MovementRule
             }
         }
         private bool DefaultStep(
-            IBoardModel board,
+            IJanggiBoard board,
             PlayerTeam team,
             Step step,
             Pos pos,
@@ -104,7 +104,7 @@ namespace YuJanggi.Core.V2.MovementRule
             return true;
         }
         private bool ChariotStep(
-            IBoardModel board,
+            IJanggiBoard board,
             PlayerTeam team,
             Step step,
             Pos pos,
@@ -139,7 +139,7 @@ namespace YuJanggi.Core.V2.MovementRule
             return true;
         }
         private bool CannonStep(
-            IBoardModel board,
+            IJanggiBoard board,
             PlayerTeam team,
             Step step,
             Pos pos,

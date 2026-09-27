@@ -1,4 +1,4 @@
-﻿namespace YuJanggi.Core.V2
+﻿namespace YuJanggi.Core
 {
     public static class CoreVersion
     {

@@ -1,9 +1,9 @@
 using System;
 
-namespace YuJanggi.Core.V2.Match
+namespace YuJanggi.Core.Match
 {
     using Domain;
-    public class Score
+    public class JanggiScore
     {
         public event Action<PlayerTeam, int> ?OnScoreChanged;
         private int _choScore = 72;
