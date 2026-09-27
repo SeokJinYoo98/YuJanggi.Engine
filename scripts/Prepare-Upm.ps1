@@ -9,7 +9,7 @@ $repoRoot = [IO.Path]::GetFullPath(
     (Join-Path $PSScriptRoot '..')
 )
 
-$sourceRoot = Join-Path $repoRoot 'YuJanggi.Core.V2'
+$sourceRoot = Join-Path $repoRoot 'src'
 $runtimeRoot = Join-Path $repoRoot 'upm/Runtime'
 
 $generatedRoot = [IO.Path]::GetFullPath(
@@ -30,7 +30,7 @@ if ($generatedRoot -ne $expectedRoot -or
 # Resolve the actual Compile items,
 # so future csproj includes/excludes are respected.
 
-$project = Join-Path $sourceRoot 'YuJanggi.Core.V2.csproj'
+$project = Join-Path $sourceRoot 'YuJanggi.Engine.csproj'
 
 $itemsJson = & dotnet msbuild `
     $project `

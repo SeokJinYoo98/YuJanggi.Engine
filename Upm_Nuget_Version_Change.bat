@@ -9,10 +9,18 @@ set "ROOT=%~dp0"
 rem =========================
 rem Files
 rem =========================
-set "CSPROJ=%ROOT%YuJanggi.Core.V2\YuJanggi.Core.V2.csproj"
-set "CORE_VERSION=%ROOT%YuJanggi.Core.V2\Version.cs"
+set "CSPROJ=%ROOT%src\YuJanggi.Engine.csproj"
+set "VERSION_FILE=%ROOT%src\Version.cs"
 set "UPM_PACKAGE=%ROOT%upm\package.json"
 set "PREPARE_UPM=%ROOT%scripts\Prepare-Upm.ps1"
+rem Validate required files before changing any version.
+for %%F in ("%CSPROJ%" "%VERSION_FILE%" "%UPM_PACKAGE%" "%PREPARE_UPM%") do (
+    if not exist "%%~F" (
+        echo Required file not found: %%~F
+        pause
+        exit /b 1
+    )
+)
 
 rem =========================
 rem Variables
@@ -23,7 +31,7 @@ set "VERSION="
 rem =========================
 rem Load Current Version
 rem =========================
-for /f "tokens=6" %%V in ('findstr /C:"public const string Current" "%CORE_VERSION%"') do (
+for /f "tokens=6" %%V in ('findstr /C:"public const string Current" "%VERSION_FILE%"') do (
     set "CURRENT_VERSION=%%V"
 )
 
@@ -66,7 +74,7 @@ rem =========================
 echo.
 echo Updating Version.cs...
 
-powershell -NoProfile -Command "$path=$env:CORE_VERSION; $version=$env:VERSION; $q=[char]34; $found=$false; $lines=Get-Content -LiteralPath $path; $lines=$lines | ForEach-Object { if($_ -match '^\s*public\s+const\s+string\s+Current\s*='){ $found=$true; '        public const string Current = ' + $q + $version + $q + ';' } else { $_ } }; if(-not $found){ throw 'Version.Current not found.' }; Set-Content -LiteralPath $path -Value $lines -Encoding UTF8"
+powershell -NoProfile -Command "$path=$env:VERSION_FILE; $version=$env:VERSION; $q=[char]34; $found=$false; $lines=Get-Content -LiteralPath $path; $lines=$lines | ForEach-Object { if($_ -match '^\s*public\s+const\s+string\s+Current\s*='){ $found=$true; '        public const string Current = ' + $q + $version + $q + ';' } else { $_ } }; if(-not $found){ throw 'Version.Current not found.' }; Set-Content -LiteralPath $path -Value $lines -Encoding UTF8"
 
 if errorlevel 1 (
     echo Failed to update Version.cs.
@@ -78,7 +86,7 @@ echo Version.cs updated: %VERSION%
 
 
 rem =========================
-rem Core.csproj Update
+rem Project version update
 rem =========================
 echo.
 echo Updating csproj version...

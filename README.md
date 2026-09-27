@@ -34,7 +34,7 @@ Core는 UnityEngine과 Protocol 패키지를 참조하지 않습니다.
 저장소 루트에서 패키지를 생성합니다. nuget.org 공개 배포를 전제로 하지 않는 절차입니다.
 
 ```powershell
-dotnet pack YuJanggi.Core.V2/YuJanggi.Core.V2.csproj -c Release -o artifacts/nuget
+dotnet pack src/YuJanggi.Engine.csproj -c Release -o artifacts/nuget
 ```
 
 `artifacts/nuget/YuJanggi.Core.V2.1.0.0.nupkg`가 생성됩니다.
@@ -65,7 +65,7 @@ Unity 6 프로젝트의 API Compatibility Level을 .NET Standard 2.1로 설정�
 Package Manager의 **Install package from disk**에서 `upm/package.json`을 선택합니다.
 사용자 asmdef가 있다면 Assembly Definition References에 `YuJanggi.Core.V2`를 추가합니다.
 
-원본은 `YuJanggi.Core.V2/`에만 작성합니다. 스크립트가 `.csproj`의 Compile 항목을
+원본은 `src/`에만 작성합니다. 스크립트가 `.csproj`의 Compile 항목을
 `upm/Runtime/Generated/`에 복사하고 안정적인 GUID의 `.meta`를 생성합니다.
 원본 수정 후 스크립트를 다시 실행하며 생성 파일을 직접 수정하지 않습니다.
 
@@ -170,8 +170,8 @@ Unity에서는 위 객체 구성과 초기화를 컴포넌트의 초기화 시�
 
 ```powershell
 dotnet build -c Release
-dotnet test YuJanggi.Core.V2.Tests/YuJanggi.Core.V2.Tests.csproj -c Release
-dotnet pack YuJanggi.Core.V2/YuJanggi.Core.V2.csproj -c Release -o artifacts/nuget
+dotnet test YuJanggi.Engine.Tests/YuJanggi.Engine.Tests.csproj -c Release
+dotnet pack src/YuJanggi.Engine.csproj -c Release -o artifacts/nuget
 ```
 
 테스트는 기물 이동과 막힘, 포의 다리·포획 조건, 궁성 이동, 자기 왕을 장군에 노출시키는 수,
@@ -179,12 +179,12 @@ dotnet pack YuJanggi.Core.V2/YuJanggi.Core.V2.csproj -c Release -o artifacts/nug
 .NET 테스트 통과만으로 Unity Player 또는 IL2CPP 검증 완료를 의미하지는 않습니다.
 
 ```text
-YuJanggi.Core.V2/
+YuJanggi.Engine/
   Board/                  # 보드와 기물 상태
   Domain/                 # 좌표·팀·이동·세션 계약
   Match/                  # 대국 진행과 규칙·기물 이동
   JanggiRule/             # 내부 이동 규칙 Pipeline과 재사용 계산 Context
-YuJanggi.Core.V2.Tests/    # MSTest 기반 .NET 테스트
+YuJanggi.Engine.Tests/    # MSTest 기반 .NET 테스트
 scripts/Prepare-Upm.ps1   # UPM 소스 생성
 upm/                     # Unity 패키지 정의와 Runtime asmdef
 ```
@@ -212,5 +212,5 @@ dotnet run --project artifacts/CoreDemo/CoreDemo.csproj --no-restore
 
 [프로토콜 V2](https://github.com/SeokJinYoo98/YuJanggi.Protocol.V2)
 · [서버 V2](https://github.com/SeokJinYoo98/YuJanggi.Server.V2)
-· [대국 구현](YuJanggi.Core.V2/Match/MatchModel.cs)
-· [규칙 테스트](YuJanggi.Core.V2.Tests/JanggiRuleTests.cs)
+· [대국 구현](YuJanggi.Engine/Match/MatchModel.cs)
+· [규칙 테스트](YuJanggi.Engine.Tests/JanggiRuleTests.cs)

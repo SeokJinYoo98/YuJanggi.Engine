@@ -1,7 +1,0 @@
-<Solution>
-  <Folder Name="/솔루션 항목/">
-    <File Path="upm/package.json" />
-  </Folder>
-  <Project Path="YuJanggi.Core.V2.Tests/YuJanggi.Core.V2.Tests.csproj" />
-  <Project Path="YuJanggi.Core.V2/YuJanggi.Core.V2.csproj" />
-</Solution>
