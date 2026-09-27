@@ -1,16 +1,16 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using YuJanggi.Core.V2.Domain;
+using YuJanggi.Engine.Domain;
 
-namespace YuJanggiCore.Tests;
+namespace YuJanggi.Engine.Tests;
 
 [TestClass]
-public class MatchModelTests
+public class JanggiEngineTests
 {
     [TestMethod]
     public void LegalMove_CapturesEnemyUpdatesScoreRecordAndChangesTurn()
     {
         // Arrange
-        var match = JanggiTestBoard.CreateEmptyMatch();
+        var match = JanggiEngineFixture.Create();
         var from = new Pos(0, 3);
         var to = new Pos(0, 6);
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
@@ -23,15 +23,15 @@ public class MatchModelTests
         };
 
         // Act
-        var moved = match.TryMove(from, to);
+        var moved = match.Engine.TryMove(from, to);
 
         // Assert
         Assert.IsTrue(moved);
         Assert.AreEqual(PieceType.Chariot, match.Board.GetPiece(to).Type);
         Assert.AreEqual(PlayerTeam.Cho, match.Board.GetPiece(to).Team);
         Assert.IsTrue(match.Board.GetPiece(from).IsNone);
-        Assert.AreEqual(PlayerTeam.Han, match.PlayerTurn);
-        Assert.AreEqual(1, match.RecordCnt);
+        Assert.AreEqual(PlayerTeam.Han, match.Turn.CurrentTeam);
+        Assert.AreEqual(1, match.Record.Count);
         Assert.AreEqual(70, hanScore);
     }
 
@@ -39,7 +39,7 @@ public class MatchModelTests
     public void IllegalMove_LeavesBoardTurnScoreAndRecordUnchanged()
     {
         // Arrange
-        var match = JanggiTestBoard.CreateEmptyMatch();
+        var match = JanggiEngineFixture.Create();
         var from = new Pos(0, 3);
         var to = new Pos(1, 4);
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
@@ -47,14 +47,14 @@ public class MatchModelTests
         match.Score.OnScoreChanged += (team, _) => hanScoreChanged |= team == PlayerTeam.Han;
 
         // Act
-        var moved = match.TryMove(from, to);
+        var moved = match.Engine.TryMove(from, to);
 
         // Assert
         Assert.IsFalse(moved);
         Assert.AreEqual(PieceType.Chariot, match.Board.GetPiece(from).Type);
         Assert.IsTrue(match.Board.GetPiece(to).IsNone);
-        Assert.AreEqual(PlayerTeam.Cho, match.PlayerTurn);
-        Assert.AreEqual(0, match.RecordCnt);
+        Assert.AreEqual(PlayerTeam.Cho, match.Turn.CurrentTeam);
+        Assert.AreEqual(0, match.Record.Count);
         Assert.IsFalse(hanScoreChanged);
     }
 
@@ -62,7 +62,7 @@ public class MatchModelTests
     public void MoveByOpponentDuringChoTurn_IsRejectedAndStateIsPreserved()
     {
         // Arrange
-        var match = JanggiTestBoard.CreateEmptyMatch();
+        var match = JanggiEngineFixture.Create();
         var from = new Pos(0, 6);
         var to = new Pos(0, 5);
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Han));
@@ -71,15 +71,15 @@ public class MatchModelTests
         match.Score.OnScoreChanged += (team, _) => choScoreChanged |= team == PlayerTeam.Cho;
 
         // Act
-        var moved = match.TryMove(from, to);
+        var moved = match.Engine.TryMove(from, to);
 
         // Assert
         Assert.IsFalse(moved);
         Assert.AreEqual(PieceType.Chariot, match.Board.GetPiece(from).Type);
         Assert.AreEqual(PieceType.Soldier, match.Board.GetPiece(to).Type);
         Assert.AreEqual(PlayerTeam.Cho, match.Board.GetPiece(to).Team);
-        Assert.AreEqual(PlayerTeam.Cho, match.PlayerTurn);
-        Assert.AreEqual(0, match.RecordCnt);
+        Assert.AreEqual(PlayerTeam.Cho, match.Turn.CurrentTeam);
+        Assert.AreEqual(0, match.Record.Count);
         Assert.IsFalse(choScoreChanged);
     }
 
@@ -87,48 +87,48 @@ public class MatchModelTests
     public void MoveThatDoesNotResolveCheck_IsRejectedAndStateIsPreserved()
     {
         // Arrange
-        var match = JanggiTestBoard.CreateEmptyMatch();
+        var match = JanggiEngineFixture.Create();
         var from = new Pos(0, 3);
         var to = new Pos(0, 4);
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
         match.Board.SetPiece(new Pos(4, 5), JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Han));
 
         // Act
-        var moved = match.TryMove(from, to);
+        var moved = match.Engine.TryMove(from, to);
 
         // Assert
         Assert.IsFalse(moved);
         Assert.AreEqual(PieceType.Chariot, match.Board.GetPiece(from).Type);
         Assert.IsTrue(match.Board.GetPiece(to).IsNone);
-        Assert.AreEqual(PlayerTeam.Cho, match.PlayerTurn);
-        Assert.AreEqual(0, match.RecordCnt);
+        Assert.AreEqual(PlayerTeam.Cho, match.Turn.CurrentTeam);
+        Assert.AreEqual(0, match.Record.Count);
     }
 
     [TestMethod]
     public void CheckingMove_RecordsJanggun()
     {
         // Arrange
-        var match = JanggiTestBoard.CreateEmptyMatch();
+        var match = JanggiEngineFixture.Create();
         var from = new Pos(4, 3);
         var to = new Pos(4, 7);
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
 
         // Act
-        var moved = match.TryMove(from, to);
+        var moved = match.Engine.TryMove(from, to);
         var hasRecord = match.Record.TryPeek(out var context);
 
         // Assert
         Assert.IsTrue(moved);
         Assert.IsTrue(hasRecord);
         Assert.IsTrue(context.IsJanggun);
-        Assert.AreEqual(PlayerTeam.Han, match.PlayerTurn);
+        Assert.AreEqual(PlayerTeam.Han, match.Turn.CurrentTeam);
     }
 
     [TestMethod]
     public void UndoAfterCapture_RestoresBoardTurnScoreAndRecord()
     {
         // Arrange
-        var match = JanggiTestBoard.CreateEmptyMatch();
+        var match = JanggiEngineFixture.Create();
         var from = new Pos(0, 3);
         var to = new Pos(0, 6);
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
@@ -139,10 +139,10 @@ public class MatchModelTests
             if (team == PlayerTeam.Han)
                 hanScore = score;
         };
-        Assert.IsTrue(match.TryMove(from, to));
+        Assert.IsTrue(match.Engine.TryMove(from, to));
 
         // Act
-        var undone = match.TryUnDo(out var context);
+        var undone = match.Engine.TryUnDo(out var context);
 
         // Assert
         Assert.IsTrue(undone);
@@ -150,8 +150,8 @@ public class MatchModelTests
         Assert.AreEqual(PieceType.Chariot, match.Board.GetPiece(from).Type);
         Assert.AreEqual(PieceType.Soldier, match.Board.GetPiece(to).Type);
         Assert.AreEqual(PlayerTeam.Han, match.Board.GetPiece(to).Team);
-        Assert.AreEqual(PlayerTeam.Cho, match.PlayerTurn);
-        Assert.AreEqual(0, match.RecordCnt);
+        Assert.AreEqual(PlayerTeam.Cho, match.Turn.CurrentTeam);
+        Assert.AreEqual(0, match.Record.Count);
         Assert.AreEqual(72, hanScore);
     }
 
@@ -159,19 +159,19 @@ public class MatchModelTests
     public void Handicap_RecordsPassAndChangesTurnWithoutChangingBoard()
     {
         // Arrange
-        var match = JanggiTestBoard.CreateEmptyMatch();
+        var match = JanggiEngineFixture.Create();
         var choKingPosition = match.Board.GetKingPos(PlayerTeam.Cho);
         var hanKingPosition = match.Board.GetKingPos(PlayerTeam.Han);
 
         // Act
-        match.Handicap();
+        match.Engine.HandleHandicap();
         var hasRecord = match.Record.TryPeek(out var context);
 
         // Assert
         Assert.IsTrue(hasRecord);
         Assert.IsTrue(context.IsHandicap);
-        Assert.AreEqual(PlayerTeam.Han, match.PlayerTurn);
-        Assert.AreEqual(1, match.RecordCnt);
+        Assert.AreEqual(PlayerTeam.Han, match.Turn.CurrentTeam);
+        Assert.AreEqual(1, match.Record.Count);
         Assert.AreEqual(choKingPosition, match.Board.GetKingPos(PlayerTeam.Cho));
         Assert.AreEqual(hanKingPosition, match.Board.GetKingPos(PlayerTeam.Han));
     }

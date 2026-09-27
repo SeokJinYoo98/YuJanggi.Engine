@@ -1,13 +1,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using YuJanggi.Core.V2.Domain;
-using YuJanggi.Core.V2.Rule;
+using YuJanggi.Engine.Domain;
+using Rule = YuJanggi.Engine.JanggiRule.JanggiRule;
 
-namespace YuJanggiCore.Tests;
+namespace YuJanggi.Engine.Tests;
 
 [TestClass]
 public class JanggiRuleTests
 {
-    private readonly JanggiRule _rule = new();
+
 
     [TestMethod]
     public void Chariot_MovesInStraightLine_WhenPathIsClear()
@@ -19,7 +19,7 @@ public class JanggiRuleTests
         board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
 
         // Act
-        var canMove = _rule.CanMove(board, from, to);
+        var canMove = new Rule(board).IsLegalMove(from, to);
 
         // Assert
         Assert.IsTrue(canMove);
@@ -35,7 +35,7 @@ public class JanggiRuleTests
         board.SetPiece(new Pos(0, 5), JanggiTestBoard.Piece(PieceType.Soldier, PlayerTeam.Cho));
 
         // Act
-        var canMove = _rule.CanMove(board, from, new Pos(0, 6));
+        var canMove = new Rule(board).IsLegalMove(from, new Pos(0, 6));
 
         // Assert
         Assert.IsFalse(canMove);
@@ -51,7 +51,7 @@ public class JanggiRuleTests
         board.SetPiece(new Pos(0, 5), JanggiTestBoard.Piece(PieceType.Soldier, PlayerTeam.Cho));
 
         // Act
-        var canMove = _rule.CanMove(board, from, new Pos(0, 6));
+        var canMove = new Rule(board).IsLegalMove(from, new Pos(0, 6));
 
         // Assert
         Assert.IsTrue(canMove);
@@ -68,8 +68,8 @@ public class JanggiRuleTests
         boardWithCannonBridge.SetPiece(new Pos(0, 5), JanggiTestBoard.Piece(PieceType.Cannon, PlayerTeam.Han));
 
         // Act
-        var withoutBridge = _rule.CanMove(boardWithoutBridge, new Pos(0, 3), new Pos(0, 6));
-        var acrossCannon = _rule.CanMove(boardWithCannonBridge, new Pos(0, 3), new Pos(0, 6));
+        var withoutBridge = new Rule(boardWithoutBridge).IsLegalMove(new Pos(0, 3), new Pos(0, 6));
+        var acrossCannon = new Rule(boardWithCannonBridge).IsLegalMove(new Pos(0, 3), new Pos(0, 6));
 
         // Assert
         Assert.IsFalse(withoutBridge);
@@ -86,7 +86,7 @@ public class JanggiRuleTests
         board.SetPiece(new Pos(0, 6), JanggiTestBoard.Piece(PieceType.Cannon, PlayerTeam.Han));
 
         // Act
-        var canMove = _rule.CanMove(board, new Pos(0, 3), new Pos(0, 6));
+        var canMove = new Rule(board).IsLegalMove(new Pos(0, 3), new Pos(0, 6));
 
         // Assert
         Assert.IsFalse(canMove);
@@ -101,7 +101,7 @@ public class JanggiRuleTests
         board.SetPiece(new Pos(4, 5), JanggiTestBoard.Piece(PieceType.Soldier, PlayerTeam.Cho));
 
         // Act
-        var canMove = _rule.CanMove(board, new Pos(4, 4), new Pos(3, 6));
+        var canMove = new Rule(board).IsLegalMove(new Pos(4, 4), new Pos(3, 6));
 
         // Assert
         Assert.IsFalse(canMove);
@@ -118,7 +118,7 @@ public class JanggiRuleTests
         board.SetPiece(new Pos(blockerX, blockerZ), JanggiTestBoard.Piece(PieceType.Soldier, PlayerTeam.Cho));
 
         // Act
-        var canMove = _rule.CanMove(board, new Pos(4, 4), new Pos(2, 6));
+        var canMove = new Rule(board).IsLegalMove(new Pos(4, 4), new Pos(2, 6));
 
         // Assert
         Assert.IsFalse(canMove);
@@ -133,12 +133,12 @@ public class JanggiRuleTests
         board.SetPiece(new Pos(4, 5), JanggiTestBoard.Piece(PieceType.Soldier, PlayerTeam.Han));
 
         // Act
-        var choForward = _rule.CanMove(board, new Pos(4, 4), new Pos(4, 5));
-        var choSideways = _rule.CanMove(board, new Pos(4, 4), new Pos(3, 4));
-        var choBackward = _rule.CanMove(board, new Pos(4, 4), new Pos(4, 3));
-        var hanForward = _rule.CanMove(board, new Pos(4, 5), new Pos(4, 4));
-        var hanSideways = _rule.CanMove(board, new Pos(4, 5), new Pos(5, 5));
-        var hanBackward = _rule.CanMove(board, new Pos(4, 5), new Pos(4, 6));
+        var choForward = new Rule(board).IsLegalMove(new Pos(4, 4), new Pos(4, 5));
+        var choSideways = new Rule(board).IsLegalMove(new Pos(4, 4), new Pos(3, 4));
+        var choBackward = new Rule(board).IsLegalMove(new Pos(4, 4), new Pos(4, 3));
+        var hanForward = new Rule(board).IsLegalMove(new Pos(4, 5), new Pos(4, 4));
+        var hanSideways = new Rule(board).IsLegalMove(new Pos(4, 5), new Pos(5, 5));
+        var hanBackward = new Rule(board).IsLegalMove(new Pos(4, 5), new Pos(4, 6));
 
         // Assert
         Assert.IsTrue(choForward);
@@ -158,8 +158,8 @@ public class JanggiRuleTests
         board.SetPiece(new Pos(4, 1), JanggiTestBoard.Piece(PieceType.Guard, PlayerTeam.Cho));
 
         // Act
-        var diagonal = _rule.CanMove(board, new Pos(4, 1), new Pos(3, 2));
-        var outside = _rule.CanMove(board, new Pos(4, 1), new Pos(4, 3));
+        var diagonal = new Rule(board).IsLegalMove(new Pos(4, 1), new Pos(3, 2));
+        var outside = new Rule(board).IsLegalMove(new Pos(4, 1), new Pos(4, 3));
 
         // Assert
         Assert.IsTrue(diagonal);
@@ -175,7 +175,7 @@ public class JanggiRuleTests
         board.SetPiece(new Pos(3, 0), JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
 
         // Act
-        var canMove = _rule.CanMove(board, new Pos(3, 0), new Pos(5, 2));
+        var canMove = new Rule(board).IsLegalMove(new Pos(3, 0), new Pos(5, 2));
 
         // Assert
         Assert.IsTrue(canMove);
@@ -190,7 +190,7 @@ public class JanggiRuleTests
         board.SetPiece(new Pos(0, 4), JanggiTestBoard.Piece(PieceType.Soldier, PlayerTeam.Cho));
 
         // Act
-        var canMove = _rule.CanMove(board, new Pos(0, 3), new Pos(0, 4));
+        var canMove = new Rule(board).IsLegalMove(new Pos(0, 3), new Pos(0, 4));
 
         // Assert
         Assert.IsFalse(canMove);
@@ -205,7 +205,7 @@ public class JanggiRuleTests
         board.SetPiece(new Pos(4, 5), JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Han));
 
         // Act
-        var canMove = _rule.CanMove(board, new Pos(4, 3), new Pos(3, 3));
+        var canMove = new Rule(board).IsLegalMove(new Pos(4, 3), new Pos(3, 3));
 
         // Assert
         Assert.IsFalse(canMove);
