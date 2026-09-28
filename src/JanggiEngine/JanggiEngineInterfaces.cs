@@ -3,7 +3,9 @@
 namespace YuJanggi.Engine.JanggiEngine
 {
     using Domain;
-    using YuJanggi.Engine.JanggiRecord;
+    using JanggiRecord;
+    using JanggiBoard;  
+
     public interface IJanggiEngine
         :   ISessionEngine,
             IControllerQuery
@@ -19,6 +21,7 @@ namespace YuJanggi.Engine.JanggiEngine
         IReadOnlyGameEvents GameEvents { get; }
         IReadOnlyGameStateEvents GameStateEvents { get; }
         IReadOnlyRecord Record { get; }
+        IReadOnlyBoard Board { get; }
     }
     public interface ISessionEngine : IReadOnlyEngine
     {

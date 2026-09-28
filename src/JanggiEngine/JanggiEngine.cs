@@ -33,6 +33,8 @@ namespace YuJanggi.Engine.JanggiEngine
             => _janggiEvents;
         public IReadOnlyRecord Record 
             => _janggiRecord;
+        public IReadOnlyBoard Board
+            => _janggiBoard;
 
         #endregion
 
