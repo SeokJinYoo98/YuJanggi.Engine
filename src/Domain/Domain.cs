@@ -20,7 +20,7 @@ namespace YuJanggi.Engine.Domain
     }
 
     public enum Formation { HEHE, EHEH, EHHE, HEEH }
-    public enum PlayerType { Local, AI, Network }
+    public enum PlayerType { Local, AI, Network, Remote}
     public enum GameModeType { Local, AI, Network }
 
 

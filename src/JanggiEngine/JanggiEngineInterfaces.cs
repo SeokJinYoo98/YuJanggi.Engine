@@ -28,6 +28,9 @@ namespace YuJanggi.Engine.JanggiEngine
         bool TryMove(Pos from, Pos to);
         void ToLiveRecord();
         void ToReplayRecord();
+        bool TryUnDo(out MoveContext ctx);
+        void GiveUp();
+        void Handicap();
     }
     public interface IControllerQuery
     {

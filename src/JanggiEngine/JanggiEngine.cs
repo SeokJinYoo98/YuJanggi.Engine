@@ -171,13 +171,9 @@ namespace YuJanggi.Engine.JanggiEngine
 
             return true;
         }
-        #endregion
-
-        #region Event Handlers
-        // 구독한 이벤트가 발생했을 때 실행하는 처리 메서드
-        public void HandleGiveUp()
+        public void GiveUp()
             => OnGameEnded(GameResult.GiveUp, _janggiTurn.CurrentTeam);
-        public void HandleHandicap()
+        public void Handicap()
         {
             if (_janggiTurn.IsEnd) return;
             _janggiRecord.Push(MoveContext.Handicap);
@@ -188,6 +184,13 @@ namespace YuJanggi.Engine.JanggiEngine
 
         public void ToReplayRecord()
             => _janggiRecord.EnterReplay();
+        #endregion
+
+        #region Event Handlers
+        // 구독한 이벤트가 발생했을 때 실행하는 처리 메서드
+        public void HandleHandicap()
+            => Handicap();
+
 
         #endregion
 
