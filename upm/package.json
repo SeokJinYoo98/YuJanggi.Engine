@@ -1,6 +1,6 @@
 ﻿{
     "name":  "com.seokjinyoo.yujanggi.engine",
-    "version":  "2.1.11",
+    "version":  "2.2.0",
     "displayName":  "YuJanggi Engine",
     "description":  "YuJanggi Engine library",
     "unity":  "6000.0"

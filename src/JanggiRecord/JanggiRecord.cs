@@ -4,7 +4,17 @@ using System.Collections.Generic;
 namespace YuJanggi.Engine.JanggiRecord
 {
     using Domain;
-    public class JanggiRecord
+    public interface IReadOnlyRecord
+    {
+        int Count { get; }
+        bool TryGetMoveCtx(int idx, out MoveContext context);
+    }
+    public interface IReplayRecord : IReadOnlyRecord
+    {
+        void EnterReplay();
+        void ExitReplay();
+    }
+    internal class JanggiRecord : IReplayRecord
     {
         public event Action<int, int>  ?OnRecordChanged;
         public bool IsLive          => Count - 1 == _currIdx;

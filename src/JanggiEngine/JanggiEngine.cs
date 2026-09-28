@@ -11,7 +11,7 @@ namespace YuJanggi.Engine.JanggiEngine
     using JanggiScore;
     using JanggiOption;
 
-    internal sealed class JanggiEngine : IReadonlyEngine
+    internal sealed class JanggiEngine : IJanggiEngine
     {
         #region Fields
         // 내부 상태와 참조를 저장하는 변수
@@ -31,6 +31,9 @@ namespace YuJanggi.Engine.JanggiEngine
             => _janggiEvents;
         public IReadOnlyGameStateEvents GameStateEvents
             => _janggiEvents;
+        public IReadOnlyRecord Record 
+            => _janggiRecord;
+
         #endregion
 
         #region Events
@@ -178,6 +181,12 @@ namespace YuJanggi.Engine.JanggiEngine
             _janggiRecord.Push(MoveContext.Handicap);
             _janggiTurn.NextTurn();
         }
+        public void ToLiveRecord()
+            => _janggiRecord.ExitReplay();
+
+        public void ToReplayRecord()
+            => _janggiRecord.EnterReplay();
+
         #endregion
 
         #region Private Methods
@@ -230,6 +239,8 @@ namespace YuJanggi.Engine.JanggiEngine
             };
             _janggiEvents.GameEnded(info);
         }
+
+
         #endregion
     }
 

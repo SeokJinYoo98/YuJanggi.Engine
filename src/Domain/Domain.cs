@@ -4,65 +4,25 @@ using System.Collections.Generic;
 
 namespace YuJanggi.Engine.Domain
 {
-   
+   public record NetworkSessionData
+    {
+        public string MatchId { get; init; } = string.Empty;
+        public string ChoId { get; init; } = string.Empty;
+        public string ChoNickname { get; init; } = string.Empty;
+        public Formation ChoFormation { get; init; } = Formation.EHEH;
+        public string HanId { get; init; } = string.Empty;
+        public string HanNickname { get; init; } = string.Empty;
+        public Formation HanFormation { get; init; } = Formation.EHEH;
+    }
     public interface IGameResultContext
     {
         GameResultInfo? GameResult { get; }
     }
-    public interface IGameInputReceiver
-    {
-        void RequestMove(Pos from, Pos to);
-        void ChangeSelection(int? pieceId, IReadOnlyList<Pos> legal, IReadOnlyList<Pos> illegal);
-    }
-    public interface ISessionTransition
-    {
-        void ToLive();
-        void ToReplay();
-        void ToEnd();
-        void ToEndReplay();
-    }
-    public struct NetworkSessionInfo
-    {
-        public string MatchId;
-        public PlayerTeam Team;
-        public string OpponentId;
-        public string OpponentNickname;
-    }
-
-
 
     public enum Formation { HEHE, EHEH, EHHE, HEEH }
     public enum PlayerType { Local, AI, Network }
     public enum GameModeType { Local, AI, Network }
 
-    
-    public interface IInputHandler
-    {
-        public event Action<Pos> OnBoardClicked;
-        public event Action      OnEmptyClicked;
-        public void RotateCamera(PlayerTeam team);
-        public void Activate();
-        public void Deactivate();
-    }
-    public interface IAIController
-    {
-
-    }
-    public interface ILocalPlayer
-    {
-        public event Action<int?, IReadOnlyList<Pos>, IReadOnlyList<Pos>> OnSelectionChanged;
-    }
-
-    public interface IPlayerController
-    {
-        public event Action<Pos, Pos> OnMoveRequest;
-        public PlayerTeam Team { get; }
-        public bool IsLocal();
-        public void BeginTurn();
-        public void EndTurn();
-        public void BindEvents(IGameInputReceiver receiver);
-        public void UnBindEvents(IGameInputReceiver receiver);
-    }
 
     public enum             PlayerTeam
     { Cho, Han, None }

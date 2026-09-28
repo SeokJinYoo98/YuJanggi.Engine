@@ -3,7 +3,7 @@
     using JanggiOption;
     public static class JanggiEngineFactory
     {
-        public static IReadonlyEngine CreateEngine(JanggiOptions options)
+        public static IJanggiEngine CreateEngine(JanggiOptions options)
             => new JanggiEngine(options);
     }
 }

@@ -3,14 +3,27 @@
 namespace YuJanggi.Engine.JanggiEngine
 {
     using Domain;
-    public interface IReadonlyEngine : IControllerQuery
+    using YuJanggi.Engine.JanggiRecord;
+    public interface IJanggiEngine
+        :   ISessionQuery,
+            IControllerQuery
     {
-        public IReadOnlyGameEvents      GameEvents { get; }
-        public IReadOnlyGameStateEvents GameStateEvents { get; }
-        public bool InitEngine();
-        public bool StartEngine();
-        public bool TryMove(Pos from, Pos to);
-        public void Tick(float deltaTime);
+    }
+    public interface IReadOnlyEngine
+    {
+        IReadOnlyGameEvents GameEvents { get; }
+        IReadOnlyGameStateEvents GameStateEvents { get; }
+        IReadOnlyRecord Record { get; }
+    }
+    public interface ISessionQuery : IReadOnlyEngine
+    {
+        bool InitEngine();
+        bool StartEngine();
+        bool TryMove(Pos from, Pos to);
+        void Tick(float deltaTime);
+
+        void ToLiveRecord();
+        void ToReplayRecord();
     }
     public interface IControllerQuery
     {
