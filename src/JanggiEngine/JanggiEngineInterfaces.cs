@@ -5,9 +5,14 @@ namespace YuJanggi.Engine.JanggiEngine
     using Domain;
     using YuJanggi.Engine.JanggiRecord;
     public interface IJanggiEngine
-        :   ISessionQuery,
+        :   ISessionEngine,
             IControllerQuery
     {
+        void UnBindEvents();
+        void BindEvents();
+        bool InitEngine();
+        bool StartEngine();
+        void Tick(float deltaTime);
     }
     public interface IReadOnlyEngine
     {
@@ -15,13 +20,9 @@ namespace YuJanggi.Engine.JanggiEngine
         IReadOnlyGameStateEvents GameStateEvents { get; }
         IReadOnlyRecord Record { get; }
     }
-    public interface ISessionQuery : IReadOnlyEngine
+    public interface ISessionEngine : IReadOnlyEngine
     {
-        bool InitEngine();
-        bool StartEngine();
         bool TryMove(Pos from, Pos to);
-        void Tick(float deltaTime);
-
         void ToLiveRecord();
         void ToReplayRecord();
     }
