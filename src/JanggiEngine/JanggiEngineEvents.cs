@@ -2,30 +2,49 @@
 namespace YuJanggi.Engine.JanggiEngine
 {
     using Domain;
-    public interface IJanggiEngineEvents
+    public interface IReadOnlyGameEvents
     {
-        event Action<MoveContext>?      OnPieceMoved;
-        event Action<PlayerTeam>?       OnCheckOccurred;
-        event Action?                   OnCheckReleased;
-        event Action<GameResultInfo>?   OnGameEnded;
-        event Action<PlayerTeam>?       OnTurnChanged;
+        event Action<MoveContext>? OnPieceMoved;
+        event Action<PlayerTeam>? OnCheckOccurred;
+        event Action? OnCheckReleased;
+        event Action<GameResultInfo>? OnGameEnded;
     }
-    internal class JanggiEngineEvents : IJanggiEngineEvents
+    public interface IReadOnlyGameStateEvents
+    {
+        event Action<PlayerTeam>? OnTurnChanged;
+        event Action<(PlayerTeam team, int time)>? OnTimeChanged;
+        event Action<int, int>? OnRecordChanged;
+        event Action<PlayerTeam, int>? OnScoreChanged;
+    }
+
+    internal class JanggiEngineEvents : IReadOnlyGameEvents, IReadOnlyGameStateEvents
     {
         public event Action<MoveContext>? OnPieceMoved;
         public event Action<PlayerTeam>? OnCheckOccurred;
         public event Action? OnCheckReleased;
         public event Action<GameResultInfo>? OnGameEnded;
+
+        // 
         public event Action<PlayerTeam>? OnTurnChanged;
-        public void PieceMoved(MoveContext ctx)
+        public event Action<(PlayerTeam team, int time)>? OnTimeChanged;
+        public event Action<int, int>? OnRecordChanged;
+        public event Action<PlayerTeam, int>? OnScoreChanged;
+
+        internal void PieceMoved(MoveContext ctx)
             => OnPieceMoved?.Invoke(ctx);
-        public void CheckOccurred(PlayerTeam team)
+        internal void CheckOccurred(PlayerTeam team)
             => OnCheckOccurred?.Invoke(team);
-        public void CheckReleased()
+        internal void CheckReleased()
             => OnCheckReleased?.Invoke();
-        public void GameEnded(GameResultInfo info)
+        internal void GameEnded(GameResultInfo info)
             => OnGameEnded?.Invoke(info);
-        public void TurnChanged(PlayerTeam next)
+        internal void TurnChanged(PlayerTeam next)
             => OnTurnChanged?.Invoke(next);
+        internal void TimeChanged((PlayerTeam team, int time) value)
+            => OnTimeChanged?.Invoke(value);
+        internal void RecordChanged(int current, int total)
+            => OnRecordChanged?.Invoke(current, total);
+        internal void ScoreChanged(PlayerTeam team, int score)
+            => OnScoreChanged?.Invoke(team, score);
     }
 }

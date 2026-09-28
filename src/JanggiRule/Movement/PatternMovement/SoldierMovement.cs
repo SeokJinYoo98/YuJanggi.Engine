@@ -3,13 +3,13 @@ namespace YuJanggi.Engine.JanggiRule.Movement
     internal class SoldierMovement : PatternMovement
     {
         internal SoldierMovement()
-        {
-            _steps = new Step[][]
+            : base(new Step[][]
             {
-                new Step[] { Step.Up },
-                new Step[] { Step.Left },
-                new Step[] { Step.Right }
-            };
+                new[] { Step.Up },
+                new[] { Step.Left },
+                new[] { Step.Right }
+            })
+        {
         }
     }
 }

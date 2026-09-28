@@ -6,7 +6,12 @@ namespace YuJanggi.Engine.JanggiRule.Movement
 
     internal class PatternMovement : Movement
     {
-        //
+
+        protected readonly Step[][] _steps;
+        protected PatternMovement(Step[][] steps)
+        {
+            _steps = steps;
+        }
         internal override void FindWays(
             IJanggiBoard board,
             Pos from,
@@ -16,8 +21,6 @@ namespace YuJanggi.Engine.JanggiRule.Movement
             foreach (var steps in _steps)
                 ProcessDirection(buffer, board, piece.Team, from, steps);
         }
-        //
-        protected Step[][] _steps;
         
         private void ProcessDirection(
             List<Pos> buffer,

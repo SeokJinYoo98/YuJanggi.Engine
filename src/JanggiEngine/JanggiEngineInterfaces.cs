@@ -3,8 +3,10 @@
 namespace YuJanggi.Engine.JanggiEngine
 {
     using Domain;
-    public interface IJanggiEngine : IControllerQuery
-    { 
+    public interface IReadonlyEngine : IControllerQuery
+    {
+        public IReadOnlyGameEvents      GameEvents { get; }
+        public IReadOnlyGameStateEvents GameStateEvents { get; }
         public bool InitEngine();
         public bool StartEngine();
         public bool TryMove(Pos from, Pos to);
@@ -14,7 +16,7 @@ namespace YuJanggi.Engine.JanggiEngine
     {
         PlayerTeam CurrentTurn { get; }
 
-        bool IsValidPiece(Pos pos, PlayerTeam team);
+        bool IsValidPiece(PlayerTeam team, Pos pos, out int pieceNum);
 
         void GetMovableCells(
             Pos from,

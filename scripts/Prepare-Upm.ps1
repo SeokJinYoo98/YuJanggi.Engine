@@ -47,7 +47,7 @@ $sourceFiles = @(
 )
 
 if ($sourceFiles.Count -eq 0) {
-    throw 'No core source files found.'
+    throw 'No engine source files found.'
 }
 
 foreach ($item in $sourceFiles) {
@@ -115,7 +115,7 @@ try {
 
         $hash = $hasher.ComputeHash(
             [Text.Encoding]::UTF8.GetBytes(
-                'com.seokjinyoo.yujanggi.core.v2/' +
+                'com.seokjinyoo.yujanggi.engine/' +
                 $assetPath
             )
         )

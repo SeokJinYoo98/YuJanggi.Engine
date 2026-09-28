@@ -9,8 +9,9 @@ namespace YuJanggi.Engine.JanggiEngine
     using JanggiRecord;
     using JanggiTurn;
     using JanggiScore;
+    using JanggiOption;
 
-    internal sealed class JanggiEngine : IJanggiEngine
+    internal sealed class JanggiEngine : IReadonlyEngine
     {
         #region Fields
         // 내부 상태와 참조를 저장하는 변수
@@ -21,12 +22,15 @@ namespace YuJanggi.Engine.JanggiEngine
         private readonly JanggiScore        _janggiScore;
         private readonly JanggiOptions      _janggiOptions;
         private readonly JanggiEngineEvents _janggiEvents;
-        
+
         #endregion
 
         #region Properties
-        public PlayerTeam CurrentTurn { get; private set; }
-
+        public PlayerTeam CurrentTurn => _janggiTurn.CurrentTeam;
+        public IReadOnlyGameEvents GameEvents 
+            => _janggiEvents;
+        public IReadOnlyGameStateEvents GameStateEvents
+            => _janggiEvents;
         #endregion
 
         #region Events
@@ -77,13 +81,23 @@ namespace YuJanggi.Engine.JanggiEngine
 
             return true;
         }
-        public bool IsValidPiece(Pos pos, PlayerTeam team)
+        public bool IsValidPiece(PlayerTeam team, Pos pos, out int pieceId)
         {
+            pieceId = int.MinValue;
+
             if (!_janggiBoard.IsInside(pos))
                 return false;
+
+            if (!_janggiBoard.HasPiece(pos))
+                return false;
+
             var piece = _janggiBoard.GetPiece(pos);
 
-            return piece.Team == team;
+            if (piece.Team != team)
+                return false;
+
+            pieceId = piece.Id;
+            return true;
         }
         public bool TryMove(Pos from, Pos to)
         {
@@ -111,13 +125,19 @@ namespace YuJanggi.Engine.JanggiEngine
         }
         public void UnBindEvents()
         {
-            _janggiTurn.OnTurnChanged  -= HandleTurnChanged;
+            _janggiTurn.OnTimeChanged     -= _janggiEvents.TimeChanged;
+            _janggiTurn.OnTurnChanged     -= _janggiEvents.TurnChanged;
+            _janggiRecord.OnRecordChanged -= _janggiEvents.RecordChanged;
+            _janggiScore.OnScoreChanged   -= _janggiEvents.ScoreChanged;
             _janggiTurn.OnTurnEnd      -= HandleHandicap;
 
         }
         public void BindEvents()
         {
-            _janggiTurn.OnTurnChanged  += HandleTurnChanged;
+            _janggiTurn.OnTimeChanged     += _janggiEvents.TimeChanged;
+            _janggiTurn.OnTurnChanged     += _janggiEvents.TurnChanged;
+            _janggiRecord.OnRecordChanged += _janggiEvents.RecordChanged;
+            _janggiScore.OnScoreChanged   += _janggiEvents.ScoreChanged;
             _janggiTurn.OnTurnEnd      += HandleHandicap;
         }
         public bool TryUnDo(out MoveContext ctx)
@@ -152,8 +172,6 @@ namespace YuJanggi.Engine.JanggiEngine
         // 구독한 이벤트가 발생했을 때 실행하는 처리 메서드
         public void HandleGiveUp()
             => OnGameEnded(GameResult.GiveUp, _janggiTurn.CurrentTeam);
-        private void HandleTurnChanged(PlayerTeam next)
-            => _janggiEvents.TurnChanged(next);
         public void HandleHandicap()
         {
             if (_janggiTurn.IsEnd) return;
@@ -166,6 +184,7 @@ namespace YuJanggi.Engine.JanggiEngine
         // 클래스 내부에서 사용하는 보조 로직
         private void ExecuteMove(Pos from, Pos to)
         {
+            // ExecuteMove인데 너무 처리하는 역할이 많음 리팩토링 필요
             var record = _janggiBoard.DoMove(from, to);
 
             var otherTeam = _janggiTurn.CurrentTeam == PlayerTeam.Cho

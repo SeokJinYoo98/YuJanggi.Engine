@@ -3,19 +3,26 @@ using System.Collections.Generic;
 namespace YuJanggi.Engine.JanggiBoard
 {
     using Domain;
-    internal interface IJanggiBoard 
+    public interface IReadOnlyBoard
     {
+        int WIDTH { get; }
+        int HEIGHT { get; }
 
-        public int WIDTH { get; }
-        public int HEIGHT { get; }
-        public Pos          GetKingPos(PlayerTeam team);
-        bool                IsInside(Pos pos);
-        bool                HasPiece(Pos pos);
-        PieceModel          GetPiece(Pos pos);
-        public bool         IsPalace(Pos pos);
-        public void         SetPiece(Pos pos, PieceModel piece);
-        public MoveRecord   DoMove(Pos from, Pos to);
-        public void         UndoMove(in MoveRecord moveRecord);
+        Pos GetKingPos(PlayerTeam team);
+
+        bool IsInside(Pos pos);
+        bool HasPiece(Pos pos);
+        PieceModel GetPiece(Pos pos);
+
+        bool IsPalace(Pos pos);
+    }
+
+    internal interface IJanggiBoard : IReadOnlyBoard
+    {
+        void SetPiece(Pos pos, PieceModel piece);
+
+        MoveRecord DoMove(Pos from, Pos to);
+        void UndoMove(in MoveRecord moveRecord);
     }
 
     internal class JanggiBoard : IJanggiBoard

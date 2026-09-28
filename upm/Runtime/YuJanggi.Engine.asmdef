@@ -1,6 +1,6 @@
 {
-  "name": "YuJanggi.Core.V2",
-  "rootNamespace": "YuJanggi.Core.V2",
+  "name": "YuJanggi.Engine",
+  "rootNamespace": "YuJanggi.Engine",
   "references": [],
   "autoReferenced": true,
   "overrideReferences": false,

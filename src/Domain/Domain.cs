@@ -4,29 +4,7 @@ using System.Collections.Generic;
 
 namespace YuJanggi.Engine.Domain
 {
-    public readonly struct JanggiOptions
-    {
-        public float TurnTime { get; }
-        public Formation ChoFormation { get; }
-        public Formation HanFormation { get; }
-        public int Width { get; }
-        public int Height { get; }
-        public JanggiOptions(
-            float turnTime = 30f,
-            Formation choFormation = Formation.EHHE,
-            Formation hanFormation = Formation.EHHE,
-            int width = 9, int height = 10)
-        {
-            if (turnTime < 10f)
-                TurnTime = 30f;
-            else
-                TurnTime = turnTime;
-            ChoFormation = choFormation;
-            HanFormation = hanFormation;
-            Width = width; Height = height;
-        }
-    }
-
+   
     public interface IGameResultContext
     {
         GameResultInfo? GameResult { get; }
@@ -42,15 +20,6 @@ namespace YuJanggi.Engine.Domain
         void ToReplay();
         void ToEnd();
         void ToEndReplay();
-    }
-    public struct GameSessionInfo
-    {
-        public GameModeType Mode;
-        public PlayerType Cho;
-        public Formation ChoFormation;
-        public PlayerType Han;
-        public Formation HanFormation;
-        public float TurnTime;
     }
     public struct NetworkSessionInfo
     {
