@@ -8,6 +8,7 @@ using Turn = YuJanggi.Engine.JanggiTurn.JanggiTurn;
 
 namespace YuJanggi.Engine.Tests;
 
+using JanggiOption;
 // Engine이 상태 조회 API를 노출하지 않아 테스트의 배치와 관찰에만 reflection을 사용합니다.
 // 이동, 무르기, 한 수 쉼은 실제 Engine 메서드로 실행합니다.
 internal sealed class JanggiEngineFixture
@@ -20,7 +21,13 @@ internal sealed class JanggiEngineFixture
 
     private JanggiEngineFixture()
     {
-        Engine = new EngineModel(new JanggiOptions(turnTime: 30f));
+        Engine = new EngineModel(new JanggiOptions
+        {
+            GameMode = GameModeType.Local,
+            PlayerCho = PlayerType.Local,
+            PlayerHan = PlayerType.Local,
+            TurnTime = 30f
+        });
         Board = ReadField<Board>("_janggiBoard");
         Record = ReadField<Record>("_janggiRecord");
         Score = ReadField<Score>("_janggiScore");
