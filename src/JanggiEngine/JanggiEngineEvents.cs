@@ -8,10 +8,11 @@ namespace YuJanggi.Engine.JanggiEngine
         event Action<PlayerTeam>? OnCheckOccurred;
         event Action? OnCheckReleased;
         event Action<GameResultInfo>? OnGameEnded;
+        event Action<PlayerTeam>? OnTurnChanged;
     }
     public interface IReadOnlyGameStateEvents
     {
-        event Action<PlayerTeam>? OnTurnChanged;
+
         event Action<(PlayerTeam team, int time)>? OnTimeChanged;
         event Action<int, int>? OnRecordChanged;
         event Action<PlayerTeam, int>? OnScoreChanged;
