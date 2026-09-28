@@ -1,121 +1,82 @@
 # YuJanggi.Engine
 
-Unity와 서버에서 공통으로 사용하는 장기 게임 규칙 및 상태 전이 엔진입니다.
+C#으로 작성한 장기 규칙 및 게임 진행 엔진입니다. `YuJanggi.Unity`와 `YuJanggi.Server.V2`에서 공통 타입과 규칙을 사용합니다.
 
 ## 프로젝트 개요
 
-- Unity 비의존 장기 게임 엔진
-- 클라이언트 / 서버 공용 게임 규칙 제공
-- Command 기반 게임 진행
-- 결정론적 상태 전이
-- 장기 기물 이동 및 규칙 검증
-- 턴 관리
-- 승패 판정
-- 기보 및 리플레이에 필요한 상태 제공
-- NuGet / UPM 패키지 제공
+- Unity에 의존하지 않는 장기판, 이동 규칙 및 게임 진행 코드
+- `JanggiOptions`로 포진, 제한시간, 판 크기 설정
+- .NET 라이브러리와 Unity Package Manager 패키지 구성
 
 ## 기술 스택
 
-- C#
-- .NET 10
-- .NET Standard 2.1
-- NuGet
+- C# 9
+- .NET 10 / .NET Standard 2.1
 - Unity Package Manager
-- xUnit
-- GitHub Actions
+- MSTest
 
 ## 엔진 구조
 
-    Client / Server
-          ↓
-       Command
-          ↓
-      Validation
-          ↓
-    YuJanggi.Engine
-          ↓
-    State Transition
-          ↓
-      Game State
+```text
+JanggiEngineFactory → JanggiEngine
+                       ├─ JanggiBoard: 기물 배치와 이동
+                       ├─ JanggiRule: 이동 후보와 합법성 판정
+                       ├─ JanggiTurn: 차례와 시간
+                       ├─ JanggiRecord: 수 기록
+                       └─ JanggiScore: 점수
+```
 
 ## 주요 기능
 
-- 게임 초기 상태 생성
-- 기물 이동 가능 여부 검증
-- 장기 규칙 검증
-- Command 처리
-- 턴 전환
-- 체크 및 장군 판정
-- 승패 판정
-- 게임 상태 조회
-- 기보 생성
-- 리플레이 상태 재현
+- 기물별 이동 후보 계산과 합법성 검사
+- 궁성 이동, 장군 및 합법적인 다음 수 판정
+- 기물 이동, 턴 전환, 시간 경과 처리
+- 포획 점수, 기보 기록, 무르기
+- 한 수 쉼, 기권, 게임 종료 이벤트
+- 실시간/리플레이 기록 모드 전환
 
-## 주요 구성 요소
+## 주요 코드
 
 | 구성 요소 | 역할 |
 | --- | --- |
-| `JanggiEngine` | 게임 진행 및 상태 전이 관리 |
-| `GameState` | 현재 게임 상태 관리 |
-| `Board` | 장기판 및 기물 상태 관리 |
-| `Command` | 게임 상태 변경 요청 |
-| `Rule` | 장기 규칙 및 이동 검증 |
-| `Turn` | 현재 차례 관리 |
-| `Record` | 게임 진행 기록 관리 |
-| `Score` | 게임 결과 및 점수 관리 |
+| [`JanggiEngineFactory`](src/JanggiEngine/JanggiEngineFactory.cs) | `JanggiOptions`로 엔진 생성 |
+| [`JanggiEngine`](src/JanggiEngine/JanggiEngine.cs) | 이동 요청과 게임 진행 처리 |
+| [`JanggiRule`](src/JanggiRule/JanggiRule.cs) | 합법적인 이동 및 장군 판정 |
+| [`JanggiBoard`](src/JanggiBoard/JanggiBoard.cs) | 장기판과 기물 상태 관리 |
+| [`JanggiRecord`](src/JanggiRecord/JanggiRecord.cs) | 수 기록과 리플레이 모드 관리 |
 
-## 게임 진행 흐름
+## 사용 방법
 
-    Command
-        ↓
-    입력 검증
-        ↓
-    규칙 검증
-        ↓
-    상태 변경
-        ↓
-    턴 전환
-        ↓
-    승패 판정
-        ↓
-    GameState 갱신
+.NET 10 프로젝트에서는 [`src/YuJanggi.Engine.csproj`](src/YuJanggi.Engine.csproj)을 참조합니다. Unity용 패키지 설정은 [`upm/package.json`](upm/package.json)에 있습니다.
 
-## 패키지 구조
+```csharp
+using YuJanggi.Engine.Domain;
+using YuJanggi.Engine.JanggiEngine;
+using YuJanggi.Engine.JanggiOption;
 
-    YuJanggi.Engine/
-    ├── Commands/
-    ├── Game/
-    ├── Board/
-    ├── Rules/
-    ├── Records/
-    ├── Common/
-    └── upm/
-        ├── package.json
-        └── Runtime/
+var options = new JanggiOptions
+{
+    GameMode = GameModeType.Local,
+    PlayerCho = PlayerType.Local,
+    PlayerHan = PlayerType.Local,
+    TurnTime = 30f
+};
+
+IJanggiEngine engine = JanggiEngineFactory.CreateEngine(options);
+engine.InitEngine();
+engine.StartEngine();
+```
 
 ## 테스트
 
-- 기물 이동 규칙 테스트
-- Command 검증 테스트
-- 상태 전이 테스트
-- 턴 전환 테스트
-- 승패 판정 테스트
-- 동일 Command 재현 테스트
-
-## NuGet 사용
-
-    dotnet add package YuJanggi.Engine
-
-## Unity UPM 사용
-
-    "com.seokjinyoo.yujanggi.engine": "Git Repository URL"
+[`YuJanggi.Engine.Tests`](YuJanggi.Engine.Tests)는 MSTest로 엔진 진행과 이동 규칙을 검사합니다.
 
 ## 관련 프로젝트
 
-- [YuJanggi.Unity](링크)
-- [YuJanggi.Server](링크)
-- [YuJanggi.Protocol](링크)
+- `YuJanggi.Unity`: 게임 클라이언트
+- `YuJanggi.Server.V2`: 게임 서버
+- `YuJanggi.Protocol`: 통신 메시지와 DTO
 
 ## 포트폴리오
 
-- [YuJanggi 포트폴리오](노션 링크)
+[상세 설계와 문제 해결 과정을 소개할 때, 포트폴리오 링크]
