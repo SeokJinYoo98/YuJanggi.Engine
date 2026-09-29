@@ -38,6 +38,25 @@ namespace YuJanggi.Engine.JanggiBoard
             _choKingPos = new Pos(4, 1);
             _hanKingPos = new Pos(4, 8);
         }
+        internal JanggiBoard(IReadOnlyBoard source)
+        {
+            _width = source.WIDTH;
+            _height = source.HEIGHT;
+            _board = new CellData[_width, _height];
+            _choKingPos = source.GetKingPos(PlayerTeam.Cho);
+            _hanKingPos = source.GetKingPos(PlayerTeam.Han);
+            for (int x = 0; x < _width; ++x)
+            {
+                for (int z = 0; z < _height; ++z)
+                {
+                    var pos = new Pos(x, z);
+                    _board[x, z] = new CellData(source.IsPalace(pos))
+                    {
+                        Piece = source.GetPiece(pos)
+                    };
+                }
+            }
+        }
         public void         ResetBoard()
         {
             for (int x = 0; x < _width; ++x)

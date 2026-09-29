@@ -35,6 +35,8 @@ namespace YuJanggi.Engine.JanggiEngine
             => _janggiRecord;
         public IReadOnlyBoard Board
             => _janggiBoard;
+        public IAIPosition CreateAIPosition()
+            => new AIPosition(_janggiBoard);
 
         #endregion
 
