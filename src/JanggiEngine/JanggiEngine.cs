@@ -1,4 +1,4 @@
-﻿using System;
+﻿#nullable enable
 using System.Collections.Generic;
 
 namespace YuJanggi.Engine.JanggiEngine

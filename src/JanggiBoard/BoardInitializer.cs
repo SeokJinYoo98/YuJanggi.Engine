@@ -1,4 +1,4 @@
-
+#nullable enable
 namespace YuJanggi.Engine.JanggiBoard
 {
     using Domain;

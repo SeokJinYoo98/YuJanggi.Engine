@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 namespace YuJanggi.Engine.JanggiEngine
 {
     using Domain;

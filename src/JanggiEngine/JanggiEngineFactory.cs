@@ -1,4 +1,5 @@
-﻿namespace YuJanggi.Engine.JanggiEngine
+﻿#nullable enable
+namespace YuJanggi.Engine.JanggiEngine
 {
     using JanggiOption;
     public static class JanggiEngineFactory

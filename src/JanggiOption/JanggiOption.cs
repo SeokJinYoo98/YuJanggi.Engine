@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using YuJanggi.Engine.Domain;
-
+﻿#nullable enable
 namespace YuJanggi.Engine.JanggiOption
 {
+    using Domain;
     public sealed record JanggiOptions
     {
         public GameModeType GameMode { get; init; }

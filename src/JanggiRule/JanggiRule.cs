@@ -1,6 +1,5 @@
+#nullable enable
 using System.Collections.Generic;
-
-
 namespace YuJanggi.Engine.JanggiRule
 {
     using JanggiBoard;

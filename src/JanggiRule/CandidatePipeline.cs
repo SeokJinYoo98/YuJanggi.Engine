@@ -1,3 +1,4 @@
+#nullable enable
 namespace YuJanggi.Engine.JanggiRule
 {
     using JanggiBoard;

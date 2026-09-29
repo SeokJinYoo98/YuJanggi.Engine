@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-
+#nullable enable
 namespace YuJanggi.Engine.JanggiBoard
 {
     using Domain;

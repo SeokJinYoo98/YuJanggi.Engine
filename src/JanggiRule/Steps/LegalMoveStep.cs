@@ -1,4 +1,4 @@
-
+#nullable enable
 namespace YuJanggi.Engine.JanggiRule.Steps
 {
     using JanggiBoard;
