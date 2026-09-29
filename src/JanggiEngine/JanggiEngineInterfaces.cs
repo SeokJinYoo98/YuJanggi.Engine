@@ -9,7 +9,8 @@ namespace YuJanggi.Engine.JanggiEngine
 
     public interface IJanggiEngine
         :   ISessionEngine,
-            IControllerQuery
+            IControllerQuery,
+            IAIPositionSource
     {
         void UnBindEvents();
         void BindEvents();
@@ -43,5 +44,31 @@ namespace YuJanggi.Engine.JanggiEngine
             Pos from,
             List<Pos> legalCells,
             List<Pos> illegalCells);
+    }
+
+    public readonly struct AIMove
+    {
+        public AIMove(Pos from, Pos to) { From = from; To = to; }
+        public Pos From { get; }
+        public Pos To { get; }
+    }
+
+    // A search position is a private copy of the live board. Only Engine applies rules to it.
+    public interface IAIPositionSource
+    {
+        IAIPosition CreateAIPosition();
+    }
+
+    public interface IAIPosition
+    {
+        int Width { get; }
+        int Height { get; }
+        PieceModel GetPiece(Pos pos);
+        bool HasPiece(Pos pos);
+        bool IsPalace(Pos pos);
+        bool IsKingInCheck(PlayerTeam team);
+        void GetLegalMoves(PlayerTeam team, List<AIMove> moves);
+        MoveRecord DoMove(Pos from, Pos to);
+        void UndoMove(in MoveRecord record);
     }
 }
