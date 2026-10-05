@@ -45,6 +45,15 @@ desktop.ini
 # Generated artifacts
 artifacts/
 
+# Unity project files created when opening the repository root in Unity
+/Assets/
+/Packages/
+/ProjectSettings/
+/Library/
+/Logs/
+/UserSettings/
+/Temp/
+
 # UPM sources are generated from the .NET project
 /upm/Runtime/Generated/
 /upm/Runtime/Generated.meta
