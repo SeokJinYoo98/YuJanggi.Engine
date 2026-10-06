@@ -1,3 +1,17 @@
+<h3 align="center">Tech Stack</h3>
+
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-original.svg" height="40" alt="C#" title="C#" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/dotnetcore/dotnetcore-original.svg" height="40" alt=".NET" title=".NET" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nuget/nuget-original.svg" height="40" alt="NuGet" title="NuGet" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/unity/unity-original.svg" height="40" alt="Unity UPM" title="Unity UPM" />
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/githubactions/githubactions-original.svg" height="40" alt="GitHub Actions" title="GitHub Actions" />
+</p>
+
+<p align="center">
+  .NET 10 / .NET Standard 2.1 · MSTest
+</p>
+
 # YuJanggi.Engine
 
 Unity에 의존하지 않는 C# 장기 규칙·게임 상태 라이브러리입니다. <br>
