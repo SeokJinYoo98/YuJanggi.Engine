@@ -1,9 +1,10 @@
 name: Engine CI
 
 on:
-    push:
-        branches:
-            - dev
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
 
 permissions:
     contents: read
