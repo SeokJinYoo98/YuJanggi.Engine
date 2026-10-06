@@ -1,11 +1,12 @@
-name: Engine CD
+name: UPM/NuGet Project CD
 
 on:
   workflow_run:
-    workflows: ['Engine Release']
+    workflows: ['UPM/NuGet Project Release']
     types: [completed]
 
 permissions:
+  contents: read
   actions: read
   packages: write
 
@@ -15,17 +16,29 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # Read the configuration from the packaging run's exact commit.
+      - name: Checkout Packaging Commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      - name: Read Workflow Config
+        id: config
+        shell: pwsh
+        run: ./scripts/Read-WorkflowConfig.ps1
+
       # .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: ${{ steps.config.outputs.dotnetVersion }}
 
       # package-release를 실행한 Run의 Artifact만 다운로드
       - name: Download NuGet Artifact
         uses: actions/download-artifact@v8
         with:
-          name: yujanggi-engine-nuget
+          name: ${{ steps.config.outputs.nugetArtifactName }}
           path: artifacts/nuget
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
