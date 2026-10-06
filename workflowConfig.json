@@ -1,0 +1,8 @@
+{
+  "target": "Engine",
+  "solutionPath": "YuJanggi.Engine.slnx",
+  "dotnetVersion": "10.0.x",
+  "nodeVersion": "22",
+  "nugetArtifactName": "yujanggi-engine-nuget",
+  "upmArtifactName": "yujanggi-engine-upm"
+}
