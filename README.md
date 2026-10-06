@@ -1,7 +1,6 @@
 # YuJanggi.Engine
 
-Unity에 의존하지 않는 C# 장기 규칙·게임 상태 라이브러리입니다. 
-
+Unity에 의존하지 않는 C# 장기 규칙·게임 상태 라이브러리입니다. <br>
 게임 화면과 네트워크 처리에서 규칙 코드를 분리하고, NuGet과 Unity UPM 패키지로 제공합니다.
 
 ## Highlights
@@ -14,8 +13,7 @@ Unity에 의존하지 않는 C# 장기 규칙·게임 상태 라이브러리입�
 
 ### .NET — NuGet
 
-GitHub Packages의 `YuJanggi.Engine` 패키지를 참조합니다. 
-
+GitHub Packages의 `YuJanggi.Engine` 패키지를 참조합니다. <br>
 NuGet 소스는 `https://nuget.pkg.github.com/SeokJinYoo98/index.json`이며, 접근 인증은 사용하는 환경에서 설정합니다. 
 
 `.nupkg`는 [GitHub Release](https://github.com/SeokJinYoo98/YuJanggi.Engine/releases)에서도 다운로드할 수 있습니다.
@@ -25,8 +23,7 @@ NuGet 소스는 `https://nuget.pkg.github.com/SeokJinYoo98/index.json`이며, �
 1. [Release 실행 화면](https://github.com/SeokJinYoo98/YuJanggi.Engine/actions/workflows/package-release.yml)의 **Artifacts → `yujanggi-engine-upm`**을 다운로드합니다.
 2. 압축을 풀고 Unity Package Manager의 **Install package from tarball**에서 내부 `.tgz`를 선택합니다. 패키지의 Unity 기준 버전은 6000.0입니다.
 
-UPM은 현재 Registry나 GitHub Release Asset으로 배포하지 않습니다. 
-
+UPM은 현재 Registry나 GitHub Release Asset으로 배포하지 않습니다. <br>
 생성된 Runtime 소스는 Git에서 제외되므로, 저장소의 `upm/` Git 경로를 직접 설치하는 방식은 사용할 수 없습니다.
 
 ### Usage
@@ -41,8 +38,7 @@ engine.InitEngine();
 engine.StartEngine();
 ```
 
-소비 프로젝트에서 `Tick(deltaTime)`을 호출해 시간을 진행합니다. 
-
+소비 프로젝트에서 `Tick(deltaTime)`을 호출해 시간을 진행합니다. <br>
 이벤트 연결이 필요 없어지면 `UnBindEvents()`로 해제합니다.
 
 ## Features
@@ -73,7 +69,8 @@ CD는 다시 빌드하지 않으며 `GITHUB_TOKEN`으로 인증합니다. UPM Ar
 
 [workflowConfig.json](workflowConfig.json)에서 프로젝트 경로·SDK·Artifact 이름을 관리합니다.
 
- [SetVersion.ps1](scripts/SetVersion.ps1)은 Tag 버전을 `Version.cs`, `.csproj`, `upm/package.json`에 함께 적용합니다. Runner에서 변경한 파일은 저장소나 로컬 폴더에 자동 반영하지 않습니다.
+[SetVersion.ps1](scripts/SetVersion.ps1)은 Tag 버전을 `Version.cs`, `.csproj`, `upm/package.json`에 함께 적용합니다. <br>
+Runner에서 변경한 파일은 저장소나 로컬 폴더에 자동 반영하지 않습니다.
 
 MSTest는 기물 이동·궁성·장군 규칙과 이동 거부 시 상태 보존, 포획·점수·턴 전환, 무르기를 검증합니다.
 
@@ -86,7 +83,8 @@ scripts/                    # 버전 갱신과 NuGet / UPM 패키징
 YuJanggi.Engine.Tests/       # MSTest 규칙·진행 검증
 ```
 
-로컬 패키징은 `scripts/LocalPackage.bat`에서 Target / Version을 입력해 실행합니다. 결과물은 `artifacts/nuget`과 `artifacts/upm`에 생성합니다.
+로컬 패키징은 `scripts/LocalPackage.bat`에서 Target / Version을 입력해 실행합니다. <br>
+결과물은 `artifacts/nuget`과 `artifacts/upm`에 생성합니다.
 
 ## Related Projects
 
