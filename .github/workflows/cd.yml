@@ -1,0 +1,57 @@
+name: Engine CD
+
+on:
+  workflow_run:
+    workflows: ['Engine Release']
+    types: [completed]
+
+permissions:
+  actions: read
+  packages: write
+
+jobs:
+  publish:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository }}
+    runs-on: windows-latest
+
+    steps:
+      # .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      # package-release를 실행한 Run의 Artifact만 다운로드
+      - name: Download NuGet Artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: yujanggi-engine-nuget
+          path: artifacts/nuget
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      # GitHub Packages NuGet Registry
+      - name: Publish NuGet Packages
+        shell: pwsh
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUGET_USERNAME: ${{ github.actor }}
+          NUGET_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $packages = @(Get-ChildItem -Path artifacts/nuget -Filter '*.nupkg' -File)
+          if ($packages.Count -eq 0) {
+            throw 'Publish할 NuGet 패키지가 없습니다.'
+          }
+
+          dotnet nuget add source $env:NUGET_SOURCE --name github --username $env:NUGET_USERNAME --password $env:NUGET_AUTH_TOKEN --store-password-in-clear-text
+          if ($LASTEXITCODE -ne 0) {
+            throw 'GitHub Packages 인증 설정에 실패했습니다.'
+          }
+
+          foreach ($package in $packages) {
+            dotnet nuget push $package.FullName --source github --api-key $env:NUGET_AUTH_TOKEN --skip-duplicate
+            if ($LASTEXITCODE -ne 0) {
+              throw "NuGet Publish에 실패했습니다: $($package.Name)"
+            }
+          }

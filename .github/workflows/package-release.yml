@@ -1,0 +1,79 @@
+name: Engine Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      # Repository
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      # Release Variables
+      # TARGET  = Engine
+      # VERSION = v2.5.0 -> 2.5.0
+      - name: Set Release Variables
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+
+          "TARGET=Engine" >> $env:GITHUB_ENV
+          "VERSION=$version" >> $env:GITHUB_ENV
+
+          Write-Host "Target: Engine"
+          Write-Host "Version: $version"
+
+      # Version.cs / csproj / package.json
+      - name: Set Version
+        shell: pwsh
+        run: ./scripts/SetVersion.ps1 -Target $env:TARGET -Version $env:VERSION
+
+      # Dependencies
+      - name: Restore
+        run: dotnet restore
+
+      # Build
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      # Test
+      - name: Test
+        run: dotnet test --no-build --configuration Release
+
+      # NuGet / UPM
+      - name: Build Packages
+        shell: cmd
+        run: scripts\BuildPackage.bat %TARGET%
+
+      # CD에서 동일한 NuGet 패키지 사용
+      - name: Upload NuGet Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: yujanggi-engine-nuget
+          path: artifacts/nuget/*.nupkg
+          if-no-files-found: error
+
+      # GitHub Release
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" `
+            artifacts\nuget\* `
+            --title "${{ github.ref_name }}" `
+            --generate-notes
