@@ -115,15 +115,13 @@ namespace YuJanggi.Engine.JanggiEngine
             _janggiRecord.OnRecordChanged += _janggiEvents.RecordChanged;
             _janggiTurn.OnTurnEnd         += HandleHandicap;
         }
-        public bool TryUnDo(out UndoData ctx)
+        public void Undo()
         {
-            ctx = null!;
-
             if (_janggiTurn.IsEnd)
-                return false;
+                return;
 
             if (!_janggiRecord.TryPop(out var data, notify: false) || data == null)
-                return false;
+                return;
 
             if (data.MovedRecord is MoveRecord record)
             {
@@ -141,7 +139,7 @@ namespace YuJanggi.Engine.JanggiEngine
             _janggiRecord.TryPeek(out var previous);
             var checkedTeam = previous?.CheckedTeam;
 
-            ctx = new UndoData
+            var undoData = new UndoData
             {
                 UndoneMove        = data.MovedRecord,
                 CurrentTurn       = _janggiTurn.CurrentTeam,
@@ -154,7 +152,7 @@ namespace YuJanggi.Engine.JanggiEngine
             };
             _janggiTurn.NotifyTurnChanged();
             _janggiRecord.NotifyRecordChanged();
-            return true;
+            _janggiEvents.UndoCompleted(undoData);
         }
         public void GiveUp()
         {
