@@ -153,10 +153,18 @@ public class JanggiEngineTests
         Assert.IsTrue(match.Engine.TryProcessTurn(from, to));
 
         // Act
-        var undone = match.Engine.TryUnDo(out var context);
+        UndoData? context = null;
+        int undoCompleted = 0;
+        match.Engine.GameEvents.OnUndoCompleted += data =>
+        {
+            context = data;
+            undoCompleted++;
+        };
+        match.Engine.Undo();
 
         // Assert
-        Assert.IsTrue(undone);
+        Assert.AreEqual(1, undoCompleted);
+        Assert.IsNotNull(context);
         Assert.IsNotNull(context.UndoneMove);
         Assert.IsTrue(context.UndoneMove.IsCaptured);
         Assert.AreEqual((72, 72), context.Score);
@@ -234,13 +242,16 @@ public class JanggiEngineTests
     }
 
     [TestMethod]
-    public void UndoPass_ReturnsRestoredStateWithoutMovingPieces()
+    public void UndoPass_ReportsRestoredStateWithoutMovingPieces()
     {
         var match = JanggiEngineFixture.Create();
         match.Engine.Handicap();
 
-        Assert.IsTrue(match.Engine.TryUnDo(out var data));
+        UndoData? data = null;
+        match.Engine.GameEvents.OnUndoCompleted += restored => data = restored;
+        match.Engine.Undo();
 
+        Assert.IsNotNull(data);
         Assert.IsNull(data.UndoneMove);
         Assert.AreEqual(PlayerTeam.Cho, data.CurrentTurn);
         Assert.AreEqual((72, 72), data.Score);
@@ -305,9 +316,20 @@ public class JanggiEngineTests
         match.Engine.GameStateEvents.OnRecordChanged += (_, _) => AssertRestoredState();
         match.Engine.GameEvents.OnTurnCompleted += _ => completed++;
 
-        Assert.IsTrue(match.Engine.TryUnDo(out var data));
+        UndoData? data = null;
+        int undoCompleted = 0;
+        match.Engine.GameEvents.OnUndoCompleted += restored =>
+        {
+            data = restored;
+            undoCompleted++;
+            AssertRestoredState();
+        };
+
+        match.Engine.Undo();
+        Assert.IsNotNull(data);
         Assert.AreEqual((72, 72), data.Score);
-        Assert.AreEqual(3, notifications);
+        Assert.AreEqual(4, notifications);
+        Assert.AreEqual(1, undoCompleted);
         Assert.AreEqual(0, completed);
     }
 
@@ -329,6 +351,28 @@ public class JanggiEngineTests
         Assert.IsTrue(match.Turn.IsEnd);
         match.Engine.Handicap();
         Assert.AreEqual(1, match.Record.Count);
-        Assert.IsFalse(match.Engine.TryUnDo(out _));
+        int undoCompleted = 0;
+        match.Engine.GameEvents.OnUndoCompleted += _ => undoCompleted++;
+        match.Engine.Undo();
+        Assert.AreEqual(0, undoCompleted);
+        Assert.IsTrue(match.Turn.IsEnd);
+        Assert.AreEqual(1, match.Record.Count);
+    }
+
+    [TestMethod]
+    public void UndoWithoutRecord_DoesNotNotifyOrChangeState()
+    {
+        var match = JanggiEngineFixture.Create();
+        int undoCompleted = 0;
+        match.Engine.GameEvents.OnUndoCompleted += _ => undoCompleted++;
+
+        match.Engine.Undo();
+
+        Assert.AreEqual(0, undoCompleted);
+        Assert.AreEqual(0, match.Record.Count);
+        Assert.AreEqual(PlayerTeam.Cho, match.Turn.CurrentTeam);
+        Assert.AreEqual((72, 72), match.Score.Score);
+        Assert.AreEqual(PieceType.King, match.Board.GetPiece(new Pos(4, 1)).Type);
+        Assert.AreEqual(PieceType.King, match.Board.GetPiece(new Pos(4, 8)).Type);
     }
 }
