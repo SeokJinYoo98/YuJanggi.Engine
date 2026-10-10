@@ -109,6 +109,8 @@ namespace YuJanggi.Engine.JanggiEngine
         }
         public void BindEvents()
         {
+            UnBindEvents();
+
             _janggiTurn.OnTimeChanged     += _janggiEvents.TimeChanged;
             _janggiRecord.OnRecordChanged += _janggiEvents.RecordChanged;
             _janggiTurn.OnTurnEnd         += HandleHandicap;
