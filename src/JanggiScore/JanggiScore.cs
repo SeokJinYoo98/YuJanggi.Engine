@@ -9,6 +9,8 @@ namespace YuJanggi.Engine.JanggiScore
         public event Action<PlayerTeam, int> ?OnScoreChanged;
         private int _choScore = 72;
         private int _hanScore = 72;
+        public (int Cho, int Han) Score
+            => (_choScore, _hanScore);
         private int GetPieceScore(PieceType type)
         {
             return type switch

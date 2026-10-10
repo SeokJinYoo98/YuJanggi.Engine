@@ -1,5 +1,4 @@
 ﻿#nullable enable
-using System.Collections.Generic;
 
 namespace YuJanggi.Engine.JanggiEngine
 {
@@ -22,28 +21,20 @@ namespace YuJanggi.Engine.JanggiEngine
         private readonly JanggiScore        _janggiScore;
         private readonly JanggiOptions      _janggiOptions;
         private readonly JanggiEngineEvents _janggiEvents;
+        private readonly ControllerQuery    _controllerQuery;
 
         #endregion
 
         #region Properties
-        public PlayerTeam CurrentTurn => _janggiTurn.CurrentTeam;
-        public IReadOnlyGameEvents GameEvents 
-            => _janggiEvents;
-        public IReadOnlyGameStateEvents GameStateEvents
-            => _janggiEvents;
-        public IReadOnlyRecord Record 
-            => _janggiRecord;
-        public IReadOnlyBoard Board
-            => _janggiBoard;
-        public IAIPosition CreateAIPosition()
-            => new AIPosition(_janggiBoard);
+        public PlayerTeam CurrentTurn           => _janggiTurn.CurrentTeam;
+        public IControllerQuery ControllerQuery => _controllerQuery;
+        public IReadOnlyGameEvents GameEvents   => _janggiEvents;
+        public IReadOnlyGameStateEvents GameStateEvents => _janggiEvents;
+        public IReadOnlyRecord Record           => _janggiRecord;
+        public IReadOnlyBoard Board             => _janggiBoard;
+        public IAIPosition CreateAIPosition()   => new AIPosition(_janggiBoard);
 
         #endregion
-
-        #region Events
-        // 상태 변화나 특정 동작을 외부에 알리는 이벤트
-        #endregion
-
         #region Constructors
         // 순수 C#
         public JanggiEngine(JanggiOptions options)
@@ -54,6 +45,10 @@ namespace YuJanggi.Engine.JanggiEngine
             _janggiRecord = new JanggiRecord();
             _janggiScore  = new JanggiScore();
             _janggiEvents = new JanggiEngineEvents();
+            _controllerQuery = new ControllerQuery(
+                _janggiBoard,
+                _janggiRule,
+                _janggiTurn);
 
             _janggiOptions = options;
         }
@@ -61,16 +56,6 @@ namespace YuJanggi.Engine.JanggiEngine
 
         #region Public Methods
         // 외부에서 호출하는 기능
-        public void GetMovableCells(
-            Pos from,
-            List<Pos> legalCells,
-            List<Pos> illegalCells)
-        {
-            _janggiRule.FindLegalMoves(
-                from,
-                legalCells, 
-                illegalCells);
-        }
         public bool InitEngine()
         {
             _janggiBoard.ResetBoard();
@@ -88,25 +73,7 @@ namespace YuJanggi.Engine.JanggiEngine
 
             return true;
         }
-        public bool IsValidPiece(PlayerTeam team, Pos pos, out int pieceId)
-        {
-            pieceId = int.MinValue;
-
-            if (!_janggiBoard.IsInside(pos))
-                return false;
-
-            if (!_janggiBoard.HasPiece(pos))
-                return false;
-
-            var piece = _janggiBoard.GetPiece(pos);
-
-            if (piece.Team != team)
-                return false;
-
-            pieceId = piece.Id;
-            return true;
-        }
-        public bool TryMove(Pos from, Pos to)
+        public bool TryProcessTurn(Pos from, Pos to)
         {
             if (_janggiTurn.IsEnd)
                 return false;
@@ -123,7 +90,10 @@ namespace YuJanggi.Engine.JanggiEngine
             if (!_janggiRule.IsLegalMove(from, to))
                 return false;
 
-            ExecuteMove(from, to);
+            var actingTeam = CurrentTurn;
+            var record     = UpdateMovement(from, to);
+
+            ProcessTurn(actingTeam, record);
             return true;
         }
         public void Tick(float deltaTime)
@@ -133,53 +103,80 @@ namespace YuJanggi.Engine.JanggiEngine
         public void UnBindEvents()
         {
             _janggiTurn.OnTimeChanged     -= _janggiEvents.TimeChanged;
-            _janggiTurn.OnTurnChanged     -= _janggiEvents.TurnChanged;
             _janggiRecord.OnRecordChanged -= _janggiEvents.RecordChanged;
-            _janggiScore.OnScoreChanged   -= _janggiEvents.ScoreChanged;
-            _janggiTurn.OnTurnEnd      -= HandleHandicap;
+            _janggiTurn.OnTurnEnd         -= HandleHandicap;
 
         }
         public void BindEvents()
         {
+            UnBindEvents();
+
             _janggiTurn.OnTimeChanged     += _janggiEvents.TimeChanged;
-            _janggiTurn.OnTurnChanged     += _janggiEvents.TurnChanged;
             _janggiRecord.OnRecordChanged += _janggiEvents.RecordChanged;
-            _janggiScore.OnScoreChanged   += _janggiEvents.ScoreChanged;
-            _janggiTurn.OnTurnEnd      += HandleHandicap;
+            _janggiTurn.OnTurnEnd         += HandleHandicap;
         }
-        public bool TryUnDo(out MoveContext ctx)
+        public bool TryUnDo(out UndoData ctx)
         {
-            ctx = default;
+            ctx = null!;
 
             if (_janggiTurn.IsEnd)
                 return false;
 
-            if (!_janggiRecord.TryPop(out ctx))
+            if (!_janggiRecord.TryPop(out var data, notify: false) || data == null)
                 return false;
 
-            if (!ctx.IsHandicap)
+            if (data.MovedRecord is MoveRecord record)
             {
-                var record = ctx.Record;
                 _janggiBoard.UndoMove(record);
 
-                if (record.IsCapture)
+                if (record.IsCaptured)
                 {
                     var captured = record.CapturedPiece;
                     _janggiScore.ApplyScore(captured.Team, captured.Type, true);
                 }
             }
 
-            _janggiTurn.NextTurn();
+            _janggiTurn.NextTurn(notify: false);
 
+            _janggiRecord.TryPeek(out var previous);
+            var checkedTeam = previous?.CheckedTeam;
+
+            ctx = new UndoData
+            {
+                UndoneMove        = data.MovedRecord,
+                CurrentTurn       = _janggiTurn.CurrentTeam,
+                Score             = _janggiScore.Score,
+                RecordCount       = _janggiRecord.Count,
+                CheckedTeam       = checkedTeam,
+                CheckReleasedTeam = data.CheckedTeam != checkedTeam
+                    ? data.CheckedTeam
+                    : null
+            };
+            _janggiTurn.NotifyTurnChanged();
+            _janggiRecord.NotifyRecordChanged();
             return true;
         }
         public void GiveUp()
-            => OnGameEnded(GameResult.GiveUp, _janggiTurn.CurrentTeam);
+        {
+            if (_janggiTurn.IsEnd)
+                return;
+
+            ProcessTurn(
+                CurrentTurn,
+                record: null,
+                gameResult: new GameResultInfo
+                {
+                    Type   = GameResult.GiveUp,
+                    Loser  = CurrentTurn,
+                    Winner = _janggiTurn.NextTeam
+                });
+        }
         public void Handicap()
         {
-            if (_janggiTurn.IsEnd) return;
-            _janggiRecord.Push(MoveContext.Handicap);
-            _janggiTurn.NextTurn();
+            if (_janggiTurn.IsEnd)
+                return;
+
+            ProcessTurn(CurrentTurn, record: null);
         }
         public void ToLiveRecord()
             => _janggiRecord.ExitReplay();
@@ -198,55 +195,89 @@ namespace YuJanggi.Engine.JanggiEngine
 
         #region Private Methods
         // 클래스 내부에서 사용하는 보조 로직
-        private void ExecuteMove(Pos from, Pos to)
+        private void ProcessTurn(
+            PlayerTeam      actingTeam,
+            MoveRecord?     record,
+            GameResultInfo? gameResult = null)
         {
-            // ExecuteMove인데 너무 처리하는 역할이 많음 리팩토링 필요
-            var record = _janggiBoard.DoMove(from, to);
+            var otherTeam   = _janggiTurn.NextTeam;
 
-            var otherTeam = _janggiTurn.CurrentTeam == PlayerTeam.Cho
-                ? PlayerTeam.Han
-                : PlayerTeam.Cho;
+            _janggiRecord.TryPeek(out var previous);
+            var previousCheckedTeam = previous?.CheckedTeam;
 
-            if (record.IsCapture)
-                _janggiScore.ApplyScore(otherTeam, record.CapturedPiece.Type);
+            var checkedTeam = record != null
+                ? GetCheckedTeam(otherTeam)
+                : previousCheckedTeam;
 
+            PlayerTeam? releasedTeam =
+                record != null && previousCheckedTeam == actingTeam
+                    ? actingTeam
+                    : null;
 
-            var isJanggun = IsCheck(otherTeam);
-            var isEnd = !_janggiRule.HasAnyLegalMove(otherTeam);
-            var ctx = new MoveContext(record, isJanggun, isEnd);
+            if (record != null && !gameResult.HasValue)
+                gameResult = ProcessTurnEnd(actingTeam, otherTeam);
 
-            _janggiRecord.Push(ctx);
-            _janggiEvents.PieceMoved(ctx);
+            int moveCount = _janggiRecord.NextMoveNumber;
 
-            if (isEnd)
-                OnGameEnded(GameResult.CheckMate, otherTeam);
-            else
-                _janggiTurn.NextTurn();
-        }
-        private bool IsCheck(PlayerTeam otherTeam)
-        {
-            var result = _janggiRule.IsKingInCheck(otherTeam);
-
-            if (result) 
-                _janggiEvents.CheckOccurred(otherTeam);
-
-            if (_janggiRecord.TryPeek(out var ctx) && ctx.IsJanggun)
-                _janggiEvents.CheckReleased();
-
-            return result;
-        }
-        private void OnGameEnded(GameResult result, PlayerTeam loser)
-        {
-            _janggiTurn.EndGame();
-            GameResultInfo info = new()
+            var data = new TurnData
             {
-                Type    = result,
-                Loser   = loser,
-                MoveCnt = _janggiRecord.TotalTurn
+                ActingTeam        = actingTeam,
+                MoveCount         = moveCount,
+                TotalTurn         = moveCount + 1,
+                Score             = _janggiScore.Score,
+                MovedRecord       = record,
+                CheckedTeam       = checkedTeam,
+                CheckReleasedTeam = releasedTeam,
+                GameResult        = gameResult
             };
-            _janggiEvents.GameEnded(info);
+
+            CompleteTurn(data);
+        }
+        private MoveRecord          UpdateMovement(Pos from, Pos to)
+        {
+            var record = _janggiBoard.DoMove(from, to);
+            if (record.IsCaptured)
+            {
+                _janggiScore.ApplyScore(
+                    record.CapturedPiece.Team,
+                    record.CapturedPiece.Type);
+            }
+            return record;
+        }
+        private PlayerTeam?         GetCheckedTeam(PlayerTeam team)
+            => _janggiRule.IsKingInCheck(team)
+                ? team
+                : null;
+        private GameResultInfo?     ProcessTurnEnd(
+            PlayerTeam actingTeam,
+            PlayerTeam otherTeam)
+        {
+            if (_janggiRule.HasAnyLegalMove(otherTeam))
+                return null;
+
+            return new GameResultInfo
+            {
+                Type   = GameResult.CheckMate,
+                Loser  = otherTeam,
+                Winner = actingTeam
+            };
         }
 
+        private void CompleteTurn(TurnData data)
+        {
+            if (data.GameResult.HasValue)
+                _janggiTurn.EndGame();
+            else
+                _janggiTurn.NextTurn(notify: false);
+
+            _janggiRecord.Push(data, notify: false);
+
+            if (!data.GameResult.HasValue)
+                _janggiTurn.NotifyTurnChanged();
+
+            _janggiRecord.NotifyRecordChanged();
+            _janggiEvents.TurnCompleted(data);
+        }
 
         #endregion
     }

@@ -162,8 +162,12 @@ namespace YuJanggi.Engine.JanggiRule.Movement
                     var result = CheckCell(board, team, dPos);
                    
 
-                    if (result == StepResult.Empty || result == StepResult.Enemy)
-                        ways.Add((dPos));
+                    if (result == StepResult.Empty ||
+                        (result == StepResult.Enemy &&
+                         board.GetPiece(dPos).Type != PieceType.Cannon))
+                    {
+                        ways.Add(dPos);
+                    }
 
                     break;
             }
