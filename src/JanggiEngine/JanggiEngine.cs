@@ -32,6 +32,7 @@ namespace YuJanggi.Engine.JanggiEngine
         public IReadOnlyGameStateEvents GameStateEvents => _janggiEvents;
         public IReadOnlyRecord Record           => _janggiRecord;
         public IReadOnlyBoard Board             => _janggiBoard;
+        public (int cho, int han) Score         => _janggiScore.Score; 
         public IAIPosition CreateAIPosition()   => new AIPosition(_janggiBoard);
 
         #endregion
