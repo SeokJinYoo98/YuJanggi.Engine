@@ -7,6 +7,26 @@ namespace YuJanggi.Engine.Tests;
 [TestClass]
 public class JanggiRuleTests
 {
+    [DataTestMethod]
+    [DataRow(PieceType.Cannon, false)]
+    [DataRow(PieceType.Soldier, true)]
+    [DataRow(PieceType.None, true)]
+    public void PalaceCannon_RejectsCannonCaptureButAllowsOtherDestinations(
+        PieceType destination, bool expected)
+    {
+        var board = JanggiTestBoard.CreateBoardWithKings();
+        JanggiTestBoard.MoveChoKing(board, new Pos(5, 0));
+        var from = new Pos(3, 0);
+        var to = new Pos(5, 2);
+        board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Cannon, PlayerTeam.Cho));
+        board.SetPiece(new Pos(4, 1), JanggiTestBoard.Piece(PieceType.Guard, PlayerTeam.Cho));
+        if (destination != PieceType.None)
+            board.SetPiece(to, JanggiTestBoard.Piece(destination, PlayerTeam.Han));
+
+        Assert.AreEqual(expected, new Rule(board).IsLegalMove(from, to));
+        Assert.AreEqual(PieceType.Cannon, board.GetPiece(from).Type);
+        Assert.AreEqual(destination, board.GetPiece(to).Type);
+    }
 
 
     [TestMethod]
