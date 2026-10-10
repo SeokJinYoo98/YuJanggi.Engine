@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using YuJanggi.Engine.Domain;
-using YuJanggi.Engine.JanggiTurn;
+using Turn = YuJanggi.Engine.JanggiTurn.JanggiTurn;
 
 namespace YuJanggi.Engine.Tests;
 
@@ -12,7 +12,7 @@ public class JanggiTurnTests
     [DataRow(true)]
     public void TurnReset_DoesNotCarryElapsedTime(bool restart)
     {
-        var turn = new JanggiTurn(30f);
+        var turn = new Turn(30f);
         turn.StartGame(PlayerTeam.Cho);
         turn.Update(0.75f);
         if (restart)
