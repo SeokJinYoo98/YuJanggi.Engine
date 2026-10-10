@@ -25,6 +25,7 @@ namespace YuJanggi.Engine.JanggiTurn
         {
             _isEnd = false;
             CurrentTeam = player;
+            _timer      = 0f;
             _turnTime   = _maxTurnTime;
             OnTurnChanged?.Invoke(CurrentTeam);
             OnTimeChanged?.Invoke((PlayerTeam.Cho, (int)_turnTime));
@@ -38,6 +39,7 @@ namespace YuJanggi.Engine.JanggiTurn
         {
             if (_isEnd) 
                 return PlayerTeam.None;
+            _timer = 0f;
             _turnTime = _maxTurnTime;
             OnTimeChanged?.Invoke((CurrentTeam, (int)_turnTime));
 
