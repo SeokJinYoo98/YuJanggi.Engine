@@ -122,7 +122,7 @@ namespace YuJanggi.Engine.JanggiEngine
             if (_janggiTurn.IsEnd)
                 return false;
 
-            if (!_janggiRecord.TryPop(out var data) || data == null)
+            if (!_janggiRecord.TryPop(out var data, notify: false) || data == null)
                 return false;
 
             if (data.MovedRecord is MoveRecord record)
@@ -136,7 +136,7 @@ namespace YuJanggi.Engine.JanggiEngine
                 }
             }
 
-            _janggiTurn.NextTurn();
+            _janggiTurn.NextTurn(notify: false);
 
             _janggiRecord.TryPeek(out var previous);
             var checkedTeam = previous?.CheckedTeam;
@@ -152,6 +152,8 @@ namespace YuJanggi.Engine.JanggiEngine
                     ? data.CheckedTeam
                     : null
             };
+            _janggiTurn.NotifyTurnChanged();
+            _janggiRecord.NotifyRecordChanged();
             return true;
         }
         public void GiveUp()
@@ -266,9 +268,14 @@ namespace YuJanggi.Engine.JanggiEngine
             if (data.GameResult.HasValue)
                 _janggiTurn.EndGame();
             else
-                _janggiTurn.NextTurn();
+                _janggiTurn.NextTurn(notify: false);
 
-            _janggiRecord.Push(data);
+            _janggiRecord.Push(data, notify: false);
+
+            if (!data.GameResult.HasValue)
+                _janggiTurn.NotifyTurnChanged();
+
+            _janggiRecord.NotifyRecordChanged();
             _janggiEvents.TurnCompleted(data);
         }
 

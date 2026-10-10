@@ -35,21 +35,25 @@ namespace YuJanggi.Engine.JanggiTurn
         {
             _isEnd = true;
         }
-        public PlayerTeam NextTurn()
+        public PlayerTeam NextTurn(bool notify = true)
         {
             if (_isEnd) 
                 return PlayerTeam.None;
             _timer = 0f;
             _turnTime = _maxTurnTime;
-            OnTimeChanged?.Invoke((CurrentTeam, (int)_turnTime));
-
             CurrentTeam = (CurrentTeam == PlayerTeam.Cho)
                 ? PlayerTeam.Han
                 : PlayerTeam.Cho;
 
+            if (notify)
+                NotifyTurnChanged();
+            return CurrentTeam;
+        }
+        internal void NotifyTurnChanged()
+        {
+            OnTimeChanged?.Invoke((NextTeam, (int)_turnTime));
             OnTimeChanged?.Invoke((CurrentTeam, (int)_turnTime));
             OnTurnChanged?.Invoke(CurrentTeam);
-            return CurrentTeam;
         }
         private float           _timer = 0;
         private float           _turnTime = 30;

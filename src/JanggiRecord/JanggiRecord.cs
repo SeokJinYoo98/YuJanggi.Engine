@@ -35,6 +35,7 @@ namespace YuJanggi.Engine.JanggiRecord
         {
             _records.Clear();
             _currIdx = -1;
+            _replay = false;
             OnRecordChanged?.Invoke(CurrMoveNumber, NextMoveNumber);
         }
         public bool TryGetTurnData(int idx, out TurnData? data)
@@ -51,15 +52,16 @@ namespace YuJanggi.Engine.JanggiRecord
         }
 
   
-        public void Push(TurnData data)
+        public void Push(TurnData data, bool notify = true)
         {
             _records.Add(data);
 
             if (!_replay) _currIdx = _records.Count - 1;
             
-            OnRecordChanged?.Invoke(CurrMoveNumber, NextMoveNumber);
+            if (notify)
+                NotifyRecordChanged();
         }
-        public bool TryPop(out TurnData? data)
+        public bool TryPop(out TurnData? data, bool notify = true)
         {
             if (_records.Count == 0)
             {
@@ -71,9 +73,11 @@ namespace YuJanggi.Engine.JanggiRecord
             data = _records[lastIdx];
             _records.RemoveAt(lastIdx);
 
-            if (!_replay) _currIdx = _records.Count - 1;
+            if (!_replay || _currIdx >= _records.Count)
+                _currIdx = _records.Count - 1;
 
-            OnRecordChanged?.Invoke(CurrMoveNumber, NextMoveNumber);
+            if (notify)
+                NotifyRecordChanged();
             return true;
         }
         public bool TryPeek(out TurnData? data)
@@ -88,6 +92,13 @@ namespace YuJanggi.Engine.JanggiRecord
             return true;
         }
         public void EnterReplay() => _replay = true;
-        public void ExitReplay() => _replay = false;
+        public void ExitReplay()
+        {
+            _replay = false;
+            _currIdx = _records.Count - 1;
+            NotifyRecordChanged();
+        }
+        internal void NotifyRecordChanged()
+            => OnRecordChanged?.Invoke(CurrMoveNumber, NextMoveNumber);
     }
 }
