@@ -3,7 +3,15 @@ using System;
 namespace YuJanggi.Engine.JanggiTurn
 {
     using Domain;
-    public class JanggiTurn
+    public interface IReadOnlyTurn
+    {
+        event Action<(PlayerTeam team, int time)>? OnTimeChanged;
+        PlayerTeam CurrentTeam { get; }
+        PlayerTeam NextTeam { get; }
+        bool IsEnd { get; }
+    }
+
+    public class JanggiTurn : IReadOnlyTurn
     {
         public event Action<PlayerTeam>                     ?OnTurnChanged;
         public event Action<(PlayerTeam team, int time)>    ?OnTimeChanged;

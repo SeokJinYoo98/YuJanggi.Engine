@@ -7,11 +7,13 @@ namespace YuJanggi.Engine.JanggiRecord
     using Domain;
     public interface IReadOnlyRecord
     {
+        event Action<int, int>? OnRecordChanged;
         int Count { get; }
-        bool TryGetTurnData(int idx, out TurnData? data);
     }
+
     public interface IReplayRecord : IReadOnlyRecord
     {
+        bool TryGetTurnData(int idx, out TurnData? data);
         void EnterReplay();
         void ExitReplay();
     }

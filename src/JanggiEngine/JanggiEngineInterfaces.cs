@@ -4,35 +4,38 @@ using System.Collections.Generic;
 namespace YuJanggi.Engine.JanggiEngine
 {
     using Domain;
-    using JanggiRecord;
     using JanggiBoard;  
+    using JanggiRecord;
+    using JanggiScore;
+    using JanggiTurn;
 
     public interface IJanggiEngine
-        :   ISessionEngine,
+        :   IGameEngine,
             IAIPositionSource
     {
-        IControllerQuery ControllerQuery { get; }
+        IReadOnlyEngine References { get; }
+        IReplayRecord ReplayRecord { get; }
         void UnBindEvents();
         void BindEvents();
-        bool InitEngine();
-        bool StartEngine();
-        void Tick(float deltaTime);
     }
     public interface IReadOnlyEngine
     {
-        IReadOnlyGameEvents GameEvents { get; }
-        IReadOnlyGameStateEvents GameStateEvents { get; }
-        IReadOnlyRecord Record { get; }
-        IReadOnlyBoard Board { get; }
+        public IReadOnlyGameEvents  GameEvents      { get; }
+        public IReadOnlyRecord      ReadOnlyRecord  { get; }
+        public IReadOnlyBoard       Board           { get; }
+        public IReadOnlyScore       Score           { get; }
+        public IReadOnlyTurn        Turn            { get; }
     }
-    public interface ISessionEngine : IReadOnlyEngine
+    public interface IGameEngine
     {
+        IControllerQuery ControllerQuery { get; }
+        bool InitEngine();
+        bool StartEngine();
+        void Tick(float deltaTime);
         bool TryProcessTurn(Pos from, Pos to);
-        void ToLiveRecord();
-        void ToReplayRecord();
         void Undo();
         void GiveUp();
-        void Handicap();
+        void HandleHandicap();
     }
     public interface IControllerQuery
     {

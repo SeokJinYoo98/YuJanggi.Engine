@@ -26,12 +26,14 @@ namespace YuJanggi.Engine.JanggiEngine
         #endregion
 
         #region Properties
-        public PlayerTeam CurrentTurn           => _janggiTurn.CurrentTeam;
-        public IControllerQuery ControllerQuery => _controllerQuery;
-        public IReadOnlyGameEvents GameEvents   => _janggiEvents;
-        public IReadOnlyGameStateEvents GameStateEvents => _janggiEvents;
-        public IReadOnlyRecord Record           => _janggiRecord;
-        public IReadOnlyBoard Board             => _janggiBoard;
+        private PlayerTeam              CurrentTurn
+            => _janggiTurn.CurrentTeam;
+        public IControllerQuery         ControllerQuery 
+            => _controllerQuery;
+        public IReadOnlyEngine          References { get; }
+        public IReplayRecord            ReplayRecord 
+            => _janggiRecord;
+
         public IAIPosition CreateAIPosition()   => new AIPosition(_janggiBoard);
 
         #endregion
@@ -45,12 +47,20 @@ namespace YuJanggi.Engine.JanggiEngine
             _janggiRecord = new JanggiRecord();
             _janggiScore  = new JanggiScore();
             _janggiEvents = new JanggiEngineEvents();
+
             _controllerQuery = new ControllerQuery(
                 _janggiBoard,
                 _janggiRule,
                 _janggiTurn);
 
             _janggiOptions = options;
+
+            References = new EngineReferences(
+                _janggiEvents,
+                _janggiRecord,
+                _janggiBoard,
+                _janggiScore,
+                _janggiTurn);
         }
         #endregion
 
@@ -102,17 +112,12 @@ namespace YuJanggi.Engine.JanggiEngine
         }
         public void UnBindEvents()
         {
-            _janggiTurn.OnTimeChanged     -= _janggiEvents.TimeChanged;
-            _janggiRecord.OnRecordChanged -= _janggiEvents.RecordChanged;
             _janggiTurn.OnTurnEnd         -= HandleHandicap;
-
         }
         public void BindEvents()
         {
             UnBindEvents();
 
-            _janggiTurn.OnTimeChanged     += _janggiEvents.TimeChanged;
-            _janggiRecord.OnRecordChanged += _janggiEvents.RecordChanged;
             _janggiTurn.OnTurnEnd         += HandleHandicap;
         }
         public void Undo()
@@ -169,7 +174,7 @@ namespace YuJanggi.Engine.JanggiEngine
                     Winner = _janggiTurn.NextTeam
                 });
         }
-        public void Handicap()
+        public void HandleHandicap()
         {
             if (_janggiTurn.IsEnd)
                 return;
@@ -185,8 +190,6 @@ namespace YuJanggi.Engine.JanggiEngine
 
         #region Event Handlers
         // 구독한 이벤트가 발생했을 때 실행하는 처리 메서드
-        public void HandleHandicap()
-            => Handicap();
 
 
         #endregion

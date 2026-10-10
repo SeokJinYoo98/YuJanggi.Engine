@@ -4,9 +4,15 @@ using System;
 namespace YuJanggi.Engine.JanggiScore
 {
     using Domain;
-    public class JanggiScore
+    public interface IReadOnlyScore
     {
-        public event Action<PlayerTeam, int> ?OnScoreChanged;
+        event Action<(int Cho, int Han)>? OnScoreChanged;
+        (int Cho, int Han) Score { get; }
+    }
+
+    public class JanggiScore : IReadOnlyScore
+    {
+        public event Action<(int Cho, int Han)>? OnScoreChanged;
         private int _choScore = 72;
         private int _hanScore = 72;
         public (int Cho, int Han) Score
@@ -34,7 +40,7 @@ namespace YuJanggi.Engine.JanggiScore
             else
                 _hanScore += value;
 
-            OnScoreChanged?.Invoke(team, team == PlayerTeam.Cho ? _choScore : _hanScore);
+            OnScoreChanged?.Invoke(Score);
         }
         public PlayerTeam Winner()
         {
@@ -49,8 +55,7 @@ namespace YuJanggi.Engine.JanggiScore
             _choScore = 72;
             _hanScore = 72;
 
-            OnScoreChanged?.Invoke(PlayerTeam.Cho, _choScore);
-            OnScoreChanged?.Invoke(PlayerTeam.Han, _hanScore);
+            OnScoreChanged?.Invoke(Score);
         }
     }
 }
