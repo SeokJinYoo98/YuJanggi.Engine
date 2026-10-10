@@ -7,6 +7,34 @@ namespace YuJanggi.Engine.Tests;
 public class JanggiEngineTests
 {
     [TestMethod]
+    public void RestartEngine_ReferencesReportResetScoreAndRecord()
+    {
+        var match = JanggiEngineFixture.Create();
+        var references = match.Engine.References;
+        match.Score.ApplyScore(PlayerTeam.Han, PieceType.Soldier);
+        match.Engine.HandleHandicap();
+        int scoreNotifications = 0;
+        (int Cho, int Han) score = (-1, -1);
+        (int Current, int Next) cursor = (-1, -1);
+        references.Score.OnScoreChanged += value =>
+        {
+            score = value;
+            scoreNotifications++;
+        };
+        references.ReadOnlyRecord.OnRecordChanged += (current, next) => cursor = (current, next);
+
+        Assert.IsTrue(match.Engine.StartEngine());
+
+        Assert.AreSame(references, match.Engine.References);
+        Assert.AreEqual(1, scoreNotifications);
+        Assert.AreEqual((72, 72), score);
+        Assert.AreEqual(score, references.Score.Score);
+        Assert.AreEqual((0, 1), cursor);
+        Assert.AreEqual(0, references.ReadOnlyRecord.Count);
+        Assert.AreEqual(PlayerTeam.Cho, references.Turn.CurrentTeam);
+    }
+
+    [TestMethod]
     public void LegalMove_CapturesEnemyUpdatesScoreRecordAndChangesTurn()
     {
         // Arrange
@@ -16,13 +44,9 @@ public class JanggiEngineTests
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
         match.Board.SetPiece(to, JanggiTestBoard.Piece(PieceType.Soldier, PlayerTeam.Han));
         var hanScore = -1;
-        match.Score.OnScoreChanged += (team, score) =>
-        {
-            if (team == PlayerTeam.Han)
-                hanScore = score;
-        };
+        match.Engine.References.Score.OnScoreChanged += score => hanScore = score.Han;
         TurnData? completed = null;
-        match.Engine.GameEvents.OnTurnCompleted += data => completed = data;
+        match.Engine.References.GameEvents.OnTurnCompleted += data => completed = data;
 
         // Act
         var moved = match.Engine.TryProcessTurn(from, to);
@@ -54,7 +78,7 @@ public class JanggiEngineTests
         var to = new Pos(1, 4);
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
         var hanScoreChanged = false;
-        match.Score.OnScoreChanged += (team, _) => hanScoreChanged |= team == PlayerTeam.Han;
+        match.Engine.References.Score.OnScoreChanged += _ => hanScoreChanged = true;
 
         // Act
         var moved = match.Engine.TryProcessTurn(from, to);
@@ -78,7 +102,7 @@ public class JanggiEngineTests
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Han));
         match.Board.SetPiece(to, JanggiTestBoard.Piece(PieceType.Soldier, PlayerTeam.Cho));
         var choScoreChanged = false;
-        match.Score.OnScoreChanged += (team, _) => choScoreChanged |= team == PlayerTeam.Cho;
+        match.Engine.References.Score.OnScoreChanged += _ => choScoreChanged = true;
 
         // Act
         var moved = match.Engine.TryProcessTurn(from, to);
@@ -145,17 +169,13 @@ public class JanggiEngineTests
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
         match.Board.SetPiece(to, JanggiTestBoard.Piece(PieceType.Soldier, PlayerTeam.Han, 7));
         var hanScore = -1;
-        match.Score.OnScoreChanged += (team, score) =>
-        {
-            if (team == PlayerTeam.Han)
-                hanScore = score;
-        };
+        match.Engine.References.Score.OnScoreChanged += score => hanScore = score.Han;
         Assert.IsTrue(match.Engine.TryProcessTurn(from, to));
 
         // Act
         UndoData? context = null;
         int undoCompleted = 0;
-        match.Engine.GameEvents.OnUndoCompleted += data =>
+        match.Engine.References.GameEvents.OnUndoCompleted += data =>
         {
             context = data;
             undoCompleted++;
@@ -206,7 +226,7 @@ public class JanggiEngineTests
     {
         var match = JanggiEngineFixture.Create();
         int completed = 0;
-        match.Engine.GameEvents.OnTurnCompleted += _ => completed++;
+        match.Engine.References.GameEvents.OnTurnCompleted += _ => completed++;
         match.Engine.BindEvents();
         match.Engine.BindEvents();
 
@@ -237,7 +257,7 @@ public class JanggiEngineTests
         Assert.AreEqual(7, match.Board.GetPiece(from).Id);
         Assert.IsTrue(match.Board.GetPiece(to).IsNone);
         Assert.AreEqual(PlayerTeam.Cho, query.CurrentTurn);
-        match.Engine.Handicap();
+        match.Engine.HandleHandicap();
         Assert.AreEqual(PlayerTeam.Han, query.CurrentTurn);
     }
 
@@ -245,10 +265,10 @@ public class JanggiEngineTests
     public void UndoPass_ReportsRestoredStateWithoutMovingPieces()
     {
         var match = JanggiEngineFixture.Create();
-        match.Engine.Handicap();
+        match.Engine.HandleHandicap();
 
         UndoData? data = null;
-        match.Engine.GameEvents.OnUndoCompleted += restored => data = restored;
+        match.Engine.References.GameEvents.OnUndoCompleted += restored => data = restored;
         match.Engine.Undo();
 
         Assert.IsNotNull(data);
@@ -281,9 +301,9 @@ public class JanggiEngineTests
             Assert.AreEqual(1, match.Record.Count);
         }
 
-        match.Engine.GameStateEvents.OnTimeChanged += _ => AssertCompletedState();
-        match.Engine.GameStateEvents.OnRecordChanged += (_, _) => AssertCompletedState();
-        match.Engine.GameEvents.OnTurnCompleted += _ => AssertCompletedState();
+        match.Engine.References.Turn.OnTimeChanged += _ => AssertCompletedState();
+        match.Engine.References.ReadOnlyRecord.OnRecordChanged += (_, _) => AssertCompletedState();
+        match.Engine.References.GameEvents.OnTurnCompleted += _ => AssertCompletedState();
 
         Assert.IsTrue(match.Engine.TryProcessTurn(from, to));
         Assert.AreEqual(4, notifications);
@@ -312,13 +332,13 @@ public class JanggiEngineTests
             Assert.AreEqual(0, match.Record.Count);
         }
 
-        match.Engine.GameStateEvents.OnTimeChanged += _ => AssertRestoredState();
-        match.Engine.GameStateEvents.OnRecordChanged += (_, _) => AssertRestoredState();
-        match.Engine.GameEvents.OnTurnCompleted += _ => completed++;
+        match.Engine.References.Turn.OnTimeChanged += _ => AssertRestoredState();
+        match.Engine.References.ReadOnlyRecord.OnRecordChanged += (_, _) => AssertRestoredState();
+        match.Engine.References.GameEvents.OnTurnCompleted += _ => completed++;
 
         UndoData? data = null;
         int undoCompleted = 0;
-        match.Engine.GameEvents.OnUndoCompleted += restored =>
+        match.Engine.References.GameEvents.OnUndoCompleted += restored =>
         {
             data = restored;
             undoCompleted++;
@@ -338,7 +358,7 @@ public class JanggiEngineTests
     {
         var match = JanggiEngineFixture.Create();
         TurnData? completed = null;
-        match.Engine.GameEvents.OnTurnCompleted += data => completed = data;
+        match.Engine.References.GameEvents.OnTurnCompleted += data => completed = data;
 
         match.Engine.GiveUp();
 
@@ -349,10 +369,10 @@ public class JanggiEngineTests
         Assert.AreEqual(PlayerTeam.Han, completed.GameResult.Value.Winner);
         Assert.IsNull(completed.MovedRecord);
         Assert.IsTrue(match.Turn.IsEnd);
-        match.Engine.Handicap();
+        match.Engine.HandleHandicap();
         Assert.AreEqual(1, match.Record.Count);
         int undoCompleted = 0;
-        match.Engine.GameEvents.OnUndoCompleted += _ => undoCompleted++;
+        match.Engine.References.GameEvents.OnUndoCompleted += _ => undoCompleted++;
         match.Engine.Undo();
         Assert.AreEqual(0, undoCompleted);
         Assert.IsTrue(match.Turn.IsEnd);
@@ -364,7 +384,7 @@ public class JanggiEngineTests
     {
         var match = JanggiEngineFixture.Create();
         int undoCompleted = 0;
-        match.Engine.GameEvents.OnUndoCompleted += _ => undoCompleted++;
+        match.Engine.References.GameEvents.OnUndoCompleted += _ => undoCompleted++;
 
         match.Engine.Undo();
 
