@@ -23,7 +23,7 @@ public class JanggiEngineTests
         };
 
         // Act
-        var moved = match.Engine.TryMove(from, to);
+        var moved = match.Engine.TryProcessTurn(from, to);
 
         // Assert
         Assert.IsTrue(moved);
@@ -47,7 +47,7 @@ public class JanggiEngineTests
         match.Score.OnScoreChanged += (team, _) => hanScoreChanged |= team == PlayerTeam.Han;
 
         // Act
-        var moved = match.Engine.TryMove(from, to);
+        var moved = match.Engine.TryProcessTurn(from, to);
 
         // Assert
         Assert.IsFalse(moved);
@@ -71,7 +71,7 @@ public class JanggiEngineTests
         match.Score.OnScoreChanged += (team, _) => choScoreChanged |= team == PlayerTeam.Cho;
 
         // Act
-        var moved = match.Engine.TryMove(from, to);
+        var moved = match.Engine.TryProcessTurn(from, to);
 
         // Assert
         Assert.IsFalse(moved);
@@ -94,7 +94,7 @@ public class JanggiEngineTests
         match.Board.SetPiece(new Pos(4, 5), JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Han));
 
         // Act
-        var moved = match.Engine.TryMove(from, to);
+        var moved = match.Engine.TryProcessTurn(from, to);
 
         // Assert
         Assert.IsFalse(moved);
@@ -114,7 +114,7 @@ public class JanggiEngineTests
         match.Board.SetPiece(from, JanggiTestBoard.Piece(PieceType.Chariot, PlayerTeam.Cho));
 
         // Act
-        var moved = match.Engine.TryMove(from, to);
+        var moved = match.Engine.TryProcessTurn(from, to);
         var hasRecord = match.Record.TryPeek(out var context);
 
         // Assert
@@ -139,7 +139,7 @@ public class JanggiEngineTests
             if (team == PlayerTeam.Han)
                 hanScore = score;
         };
-        Assert.IsTrue(match.Engine.TryMove(from, to));
+        Assert.IsTrue(match.Engine.TryProcessTurn(from, to));
 
         // Act
         var undone = match.Engine.TryUnDo(out var context);

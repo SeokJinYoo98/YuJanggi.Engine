@@ -9,9 +9,9 @@ namespace YuJanggi.Engine.JanggiEngine
 
     public interface IJanggiEngine
         :   ISessionEngine,
-            IControllerQuery,
             IAIPositionSource
     {
+        IControllerQuery ControllerQuery { get; }
         void UnBindEvents();
         void BindEvents();
         bool InitEngine();
@@ -27,10 +27,10 @@ namespace YuJanggi.Engine.JanggiEngine
     }
     public interface ISessionEngine : IReadOnlyEngine
     {
-        bool TryMove(Pos from, Pos to);
+        bool TryProcessTurn(Pos from, Pos to);
         void ToLiveRecord();
         void ToReplayRecord();
-        bool TryUnDo(out MoveContext ctx);
+        bool TryUnDo(out UndoData undoData);
         void GiveUp();
         void Handicap();
     }

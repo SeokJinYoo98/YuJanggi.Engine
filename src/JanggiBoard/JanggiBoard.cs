@@ -86,15 +86,21 @@ namespace YuJanggi.Engine.JanggiBoard
             => team == PlayerTeam.Cho ? _choKingPos : _hanKingPos;
         public MoveRecord   DoMove(Pos from, Pos to)
         {
-            var moved       = GetPiece(from);
-            var captured    = GetPiece(to);
+            var moved = GetPiece(from);
+            var captured = GetPiece(to);
 
             SetPiece(from, PieceModel.None);
             SetPiece(to, moved);
 
             UpdateKingPos(to, moved);
 
-            return new(from, to, moved, captured);
+            return new MoveRecord
+            {
+                From = from,
+                To = to,
+                MovedPiece = moved,
+                CapturedPiece = captured
+            };
         }
         public void         UndoMove(in MoveRecord moveRecord)
         {
@@ -104,7 +110,9 @@ namespace YuJanggi.Engine.JanggiBoard
             var moved = moveRecord.MovedPiece;
 
             SetPiece(from, moved);
-            SetPiece(to, moveRecord.IsCapture ? moveRecord.CapturedPiece : PieceModel.None);
+            SetPiece(to, moveRecord.IsCaptured ?
+                moveRecord.CapturedPiece : 
+                PieceModel.None);
 
             UpdateKingPos(from, moved);
         }

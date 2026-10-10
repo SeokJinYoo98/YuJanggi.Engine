@@ -10,6 +10,8 @@ namespace YuJanggi.Engine.JanggiTurn
         public event Action                                 ?OnTurnEnd;
 
         public PlayerTeam CurrentTeam { get; private set; }
+        public PlayerTeam NextTeam 
+            => (CurrentTeam == PlayerTeam.Cho) ? PlayerTeam.Han : PlayerTeam.Cho;
         public bool  IsEnd => _isEnd;
         private bool _isEnd = false;
         private bool _noTime = false;
@@ -28,13 +30,10 @@ namespace YuJanggi.Engine.JanggiTurn
             OnTimeChanged?.Invoke((PlayerTeam.Cho, (int)_turnTime));
             OnTimeChanged?.Invoke((PlayerTeam.Han, (int)_turnTime));
         }
-
         public void EndGame()
         {
             _isEnd = true;
         }
-
-
         public PlayerTeam NextTurn()
         {
             if (_isEnd) 

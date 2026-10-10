@@ -1,31 +1,16 @@
 #nullable enable
 using System;
+using YuJanggi.Engine.JanggiBoard;
 
 namespace YuJanggi.Engine.Domain
 {
-   public record NetworkSessionData
-    {
-        public string MatchId { get; init; } = string.Empty;
-        public string ChoId { get; init; } = string.Empty;
-        public string ChoNickname { get; init; } = string.Empty;
-        public Formation ChoFormation { get; init; } = Formation.EHEH;
-        public string HanId { get; init; } = string.Empty;
-        public string HanNickname { get; init; } = string.Empty;
-        public Formation HanFormation { get; init; } = Formation.EHEH;
-    }
-    public interface IGameResultContext
-    {
-        GameResultInfo? GameResult { get; }
-    }
+
 
     public enum Formation { HEHE, EHEH, EHHE, HEEH }
     public enum PlayerType { Local, AI, Network, Remote}
     public enum GameModeType { Local, AI, Network }
-
-
-    public enum             PlayerTeam
-    { Cho, Han, None }
-    public enum             PieceType
+    public enum PlayerTeam{ Cho, Han, None }
+    public enum PieceType
     {
         King,       // 궁
         Chariot,    // 차
@@ -36,8 +21,6 @@ namespace YuJanggi.Engine.Domain
         Soldier,    // 졸/병
         None
     }
-
-
     public readonly struct Pos : IEquatable<Pos>
     {
         public Pos(int x, int z)
@@ -76,20 +59,53 @@ namespace YuJanggi.Engine.Domain
         public static readonly Pos RightDown = new Pos(+1, -1);
         public static readonly Pos Invalid = new Pos(-100, -100);
     }
-    
 
-    public enum GameResult
+    public sealed record MoveRecord
     {
-        Draw,
-        CheckMate,
-        GiveUp,
-        Score
+        public PieceModel   MovedPiece      { get; init; }
+        public PieceModel   CapturedPiece   { get; init; }
+        public Pos          From            { get; init; }
+        public Pos          To              { get; init; }
+        public bool IsCaptured 
+            => !CapturedPiece.IsNone;
     }
+    public enum GameResult { Draw, CheckMate, GiveUp,  Score }
     public struct GameResultInfo
     {
-        public int          MoveCnt;
-        public GameResult   Type;
-        public PlayerTeam   Loser;
+        public GameResult Type;
+        public PlayerTeam Loser;
+        public PlayerTeam Winner;
     }
-
+    public sealed record CheckRecord
+    {
+        public PlayerTeam? CheckedTeam { get; init; }
+        public PlayerTeam? CheckReleasedTeam { get; init; }
+    }
+    public sealed record GameInfo
+    {
+        public GameModeType Mode { get; init; }
+        public Formation Formation { get; init; }
+        public PlayerType ChoPlayerType { get; init; }
+        public PlayerType HanPlayerType { get; init; }
+    }
+    public sealed record TurnData
+    {
+        public PlayerTeam           ActingTeam          { get; init; }
+        public int                  MoveCount           { get; init; }
+        public (int Cho, int Han)   Score               { get; init; }
+        public int                  TotalTurn           { get; init; }
+        public MoveRecord?          MovedRecord         { get; init; }
+        public PlayerTeam?          CheckedTeam         { get; init; }
+        public PlayerTeam?          CheckReleasedTeam   { get; init; }
+        public GameResultInfo?      GameResult          { get; init; }
+    }
+    public sealed record UndoData
+    {
+        public MoveRecord?          UndoneMove  { get; init; }
+        public PlayerTeam           CurrentTurn { get; init; }
+        public (int Cho, int Han)   Score       { get; init; }
+        public int                  RecordCount { get; init; }
+        public PlayerTeam?          CheckedTeam { get; init; }
+        public PlayerTeam?          CheckReleasedTeam { get; init; }
+    }
 }
