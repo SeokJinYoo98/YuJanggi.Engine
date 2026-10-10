@@ -30,7 +30,7 @@ namespace YuJanggi.Engine.JanggiEngine
         bool TryProcessTurn(Pos from, Pos to);
         void ToLiveRecord();
         void ToReplayRecord();
-        bool TryUnDo(out UndoData undoData);
+        void Undo();
         void GiveUp();
         void Handicap();
     }
