@@ -34,7 +34,8 @@ namespace YuJanggi.Engine.JanggiEngine
         public IReplayRecord            ReplayRecord 
             => _janggiRecord;
 
-        public IAIPosition CreateAIPosition()   => new AIPosition(_janggiBoard);
+        public IAIPosition CreateAIPosition()   
+            => new AIPosition(_janggiBoard);
 
         #endregion
         #region Constructors
@@ -164,7 +165,7 @@ namespace YuJanggi.Engine.JanggiEngine
             _janggiRecord.NotifyRecordChanged();
             _janggiEvents.UndoCompleted(undoData);
         }
-        public void GiveUp()
+        public void GiveUp(PlayerTeam loser)
         {
             if (_janggiTurn.IsEnd)
                 return;
@@ -175,8 +176,8 @@ namespace YuJanggi.Engine.JanggiEngine
                 gameResult: new GameResultInfo
                 {
                     Type   = GameResult.GiveUp,
-                    Loser  = CurrentTurn,
-                    Winner = _janggiTurn.NextTeam
+                    Loser  = loser,
+                    Winner = loser == PlayerTeam.Cho ? PlayerTeam.Han : PlayerTeam.Cho
                 });
         }
         public void HandleHandicap()

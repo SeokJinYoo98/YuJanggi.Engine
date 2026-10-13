@@ -35,7 +35,7 @@ namespace YuJanggi.Engine.JanggiEngine
         void Tick(float deltaTime);
         bool TryProcessTurn(Pos from, Pos to);
         void Undo();
-        void GiveUp();
+        void GiveUp(PlayerTeam loser);
         void HandleHandicap();
     }
     public interface IControllerQuery
