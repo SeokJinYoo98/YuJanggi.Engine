@@ -83,6 +83,11 @@ namespace YuJanggi.Engine.JanggiEngine
 
             return true;
         }
+        // 외부에서 확정한 종료를 반영하며, 결과 생성·기록 추가·이벤트 알림은 수행하지 않습니다.
+        public void EndEngine()
+        {
+            _janggiTurn.EndGame();
+        }
         public bool TryProcessTurn(Pos from, Pos to)
         {
             if (_janggiTurn.IsEnd)
