@@ -360,7 +360,7 @@ public class JanggiEngineTests
         TurnData? completed = null;
         match.Engine.References.GameEvents.OnTurnCompleted += data => completed = data;
 
-        match.Engine.GiveUp();
+        match.Engine.GiveUp(PlayerTeam.Cho);
 
         Assert.IsNotNull(completed);
         Assert.IsTrue(completed.GameResult.HasValue);
