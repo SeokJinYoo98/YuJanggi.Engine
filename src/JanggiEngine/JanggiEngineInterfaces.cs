@@ -31,6 +31,7 @@ namespace YuJanggi.Engine.JanggiEngine
         IControllerQuery ControllerQuery { get; }
         bool InitEngine();
         bool StartEngine();
+        void EndEngine();
         void Tick(float deltaTime);
         bool TryProcessTurn(Pos from, Pos to);
         void Undo();
