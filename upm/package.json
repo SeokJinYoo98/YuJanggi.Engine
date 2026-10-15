@@ -1,12 +1,12 @@
 ﻿{
     "name":  "com.yujanggi.engine",
-    "version":  "2.4.0",
+    "version":  "2.8.3",
     "displayName":  "YuJanggi Engine",
     "description":  "YuJanggi Engine library",
     "unity":  "6000.0",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/SeokJinYoo98/YuJanggi.Core.V2.git",
+        "url": "git+https://github.com/SeokJinYoo98/YuJanggi.Engine.git",
         "directory": "upm"
     },
     "author": {
