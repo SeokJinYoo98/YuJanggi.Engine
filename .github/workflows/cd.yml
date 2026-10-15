@@ -68,3 +68,47 @@ jobs:
               throw "NuGet Publish에 실패했습니다: $($package.Name)"
             }
           }
+
+  publish-upm:
+    name: Publish UPM to npm
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+
+    steps:
+      - name: Checkout Packaging Commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      - name: Read Workflow Config
+        id: config
+        shell: pwsh
+        run: ./scripts/Read-WorkflowConfig.ps1
+
+      - name: Setup Node.js for UPM Publishing
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Setup npm for Trusted Publishing
+        run: npm install --global npm@11
+
+      - name: Download UPM Artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ steps.config.outputs.upmArtifactName }}
+          path: artifacts/upm
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      # Configure this repository and cd.yml as a Trusted Publisher on npm first.
+      - name: Publish UPM Packages
+        shell: pwsh
+        run: ./scripts/Publish-Upm.ps1

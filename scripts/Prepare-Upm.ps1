@@ -111,4 +111,17 @@ finally {
     $hasher.Dispose()
 }
 
+# Use the actual Actions repository identity, including after a repository rename.
+if ($env:GITHUB_ACTIONS -eq 'true' -and $env:GITHUB_REPOSITORY) {
+    $manifestPath = Join-Path $packageRoot 'package.json'
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $manifest | Add-Member -MemberType NoteProperty -Name repository -Value ([ordered]@{
+        type = 'git'
+        url = "git+$($env:GITHUB_SERVER_URL)/$($env:GITHUB_REPOSITORY).git"
+        directory = 'upm'
+    }) -Force
+    $manifestJson = $manifest | ConvertTo-Json -Depth 10
+    [IO.File]::WriteAllText($manifestPath, $manifestJson + [Environment]::NewLine, [Text.UTF8Encoding]::new($false))
+}
+
 Write-Host "Generated $($sourceFiles.Count) $Target source files in $generatedRoot"
