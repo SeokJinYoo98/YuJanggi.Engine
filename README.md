@@ -1,4 +1,6 @@
-<h3 align="center">Tech Stack</h3>
+# YuJanggi.Engine
+
+## Tech Stack
 
 <p align="center">
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-original.svg" height="40" alt="C#" title="C#" />
@@ -9,100 +11,134 @@
 </p>
 
 <p align="center">
-  .NET 10 / .NET Standard 2.1 · MSTest
+  C# · .NET 10 / .NET Standard 2.1 · MSTest<br />
+  CI/CD · GitHub Actions · PowerShell · NuGet / UPM / npm
 </p>
 
-# YuJanggi.Engine
+## 라이브러리 소개
 
-Unity에 의존하지 않는 C# 장기 규칙·게임 상태 라이브러리입니다. <br>
-게임 화면과 네트워크 처리에서 규칙 코드를 분리하고, NuGet과 Unity UPM 패키지로 제공합니다.
+Unity에 의존하지 않는 C# 장기 규칙·게임 상태 라이브러리입니다.<br />
+보드·규칙·턴·점수·기보를 관리하며, 화면·입력·네트워크 처리는 소비 프로젝트가 담당합니다.
 
-## Highlights
+.NET용 NuGet과 Unity용 UPM 패키지로 제공합니다.
 
-- 한 대국의 Board / Turn / Record / Score 관리
-- .NET 10 / .NET Standard 2.1 지원
-- GitHub Actions로 검증·패키징·NuGet 배포 자동화
+## 주요 기능
 
-## Installation
+- **이동 규칙**: 기물별 후보 생성 · 궁성 이동 · 경로 검사 · 왕 안전성 검증
+- **대국 진행**: 차례·기물 소유 확인 · 포획·점수 · 턴 전환과 시간 진행
+- **종료 처리**: 기권 · 한 수 쉼 · 대국 결과와 상태 변경 이벤트
+- **기보 관리**: 턴 기록 · 무르기 · 리플레이 기록 조회
+- **AI 탐색 지원**: 실제 보드와 분리된 복제 보드에서 합법 이동 조회·이동·복원
+
+AI의 수 선택 전략과 UI 재생은 Engine 외부에서 구현합니다.
+
+## 설치 방법
 
 ### .NET — NuGet
 
-GitHub Packages의 `YuJanggi.Engine` 패키지를 참조합니다. <br>
-NuGet 소스는 `https://nuget.pkg.github.com/SeokJinYoo98/index.json`이며, 접근 인증은 사용하는 환경에서 설정합니다. 
+GitHub Packages의 `YuJanggi.Engine`을 참조합니다.<br />
+NuGet 소스는 `https://nuget.pkg.github.com/SeokJinYoo98/index.json`이며 읽기 인증은 사용하는 환경에 설정합니다.
 
-`.nupkg`는 [GitHub Release](https://github.com/SeokJinYoo98/YuJanggi.Engine/releases)에서도 다운로드할 수 있습니다.
+```bash
+dotnet add package YuJanggi.Engine --source https://nuget.pkg.github.com/SeokJinYoo98/index.json
+```
 
 ### Unity — UPM
 
-1. [Release 실행 화면](https://github.com/SeokJinYoo98/YuJanggi.Engine/actions/workflows/package-release.yml)의 **Artifacts → `yujanggi-engine-upm`**을 다운로드합니다.
-2. 압축을 풀고 Unity Package Manager의 **Install package from tarball**에서 내부 `.tgz`를 선택합니다. 패키지의 Unity 기준 버전은 6000.0입니다.
+Project Settings → Package Manager에서 Scoped Registry를 등록합니다.
 
-UPM은 현재 Registry나 GitHub Release Asset으로 배포하지 않습니다. <br>
-생성된 Runtime 소스는 Git에서 제외되므로, 저장소의 `upm/` Git 경로를 직접 설치하는 방식은 사용할 수 없습니다.
+| 항목 | 값 |
+| --- | --- |
+| Name | YuJanggi |
+| URL | `https://registry.npmjs.org` |
+| Scope | `com.yujanggi` |
 
-### Usage
+Package Manager의 My Registries에서 **YuJanggi Engine**을 설치합니다.<br />
+패키지 ID는 `com.yujanggi.engine`이며 최소 Unity 버전은 **6000.0**입니다.
+
+[GitHub Releases](https://github.com/SeokJinYoo98/YuJanggi.Engine/releases)의 `.nupkg` / `.tgz`로도 설치할 수 있습니다.
+
+## 사용 예시
 
 ```csharp
 using YuJanggi.Engine.JanggiEngine;
 using YuJanggi.Engine.JanggiOption;
 
-var engine = JanggiEngineFactory.CreateEngine(new JanggiOptions { TurnTime = 30f });
+var engine = JanggiEngineFactory.CreateEngine(
+    new JanggiOptions { TurnTime = 30f });
+
 engine.BindEvents();
 engine.InitEngine();
 engine.StartEngine();
 ```
 
-소비 프로젝트에서 `Tick(deltaTime)`을 호출해 시간을 진행합니다. <br>
-이벤트 연결이 필요 없어지면 `UnBindEvents()`로 해제합니다.
+소비 프로젝트의 게임 루프에서 `engine.Tick(deltaTime)`을 호출해 시간을 진행합니다.<br />
+이동은 `engine.TryProcessTurn(from, to)`로 요청하고, 종료 시 `EndEngine()`과 `UnBindEvents()`로 시간 진행과 내부 이벤트 연결을 정리합니다.
 
-## Features
+| 공개 API | 용도 |
+| --- | --- |
+| `References` | 읽기 전용 보드·턴·점수·기보와 게임 이벤트 참조 |
+| `ControllerQuery` | 현재 차례 · 기물 선택 유효성 · 합법·불법 이동 위치 조회 |
+| `ReplayRecord` | 리플레이 모드 진입·종료와 인덱스별 턴 기록 조회 |
+| `CreateAIPosition()` | AI 탐색용 복제 보드 생성 |
 
-- 기물별 이동 후보, 궁성 이동과 이동 경로 검사
-- 차례·기물 소유·장군 해소 조건을 확인한 이동 처리
-- 포획 점수와 기보 기록, 무르기와 리플레이 기록 모드
-- 한 수 쉼·기권·게임 종료와 상태 변경 이벤트
-- 복제 보드의 합법 이동 조회·이동·복원을 통한 AI 탐색 지원
+외부에서 구독한 화면·입력 이벤트는 소비 프로젝트에서 해제합니다.
 
-## Architecture
+## 규칙 처리 구조
 
-[JanggiEngineFactory](src/JanggiEngine/JanggiEngineFactory.cs)가 `JanggiOptions`로 엔진을 생성합니다.
+이동 후보 생성과 최종 합법성 검증을 분리합니다.
 
- [JanggiEngine](src/JanggiEngine/JanggiEngine.cs)은 Board·Rule·Turn·Record·Score를 조정합니다.
+1. **MovementStep**: 기물별 이동 패턴과 경로를 바탕으로 후보를 생성합니다.
+2. **PalaceStep**: 궁성 내부 이동 규칙을 적용합니다.
+3. **LegalMoveStep**: 후보 이동을 임시 적용해 자기 왕의 장군 여부를 확인하고 보드를 복원합니다.
 
-- **규칙 처리**: 이동 후보 생성 → 궁성 규칙 적용 → 왕 안전성 검사
-- **상태 조회**: Session의 게임 진행, Controller의 조회, AI 탐색을 별도 계약으로 제공
-- **표현 분리**: Engine은 상태와 이벤트를 제공하며 UI·입력·통신은 소비 프로젝트가 담당
+[CandidatePipeline](src/JanggiRule/CandidatePipeline.cs)은 앞의 두 단계를 담당하고, [JanggiRule](src/JanggiRule/JanggiRule.cs)이 합법성 검사까지 조합합니다.<br />
+`TryProcessTurn`은 대국 종료·좌표·기물 존재·소유권을 확인한 뒤 합법 이동만 실제 대국에 적용합니다.
 
-## CI/CD
+규칙 계산은 인스턴스 내부 작업 메모리를 재사용하므로 동일 Engine 인스턴스를 동시에 호출하지 않습니다.
 
-- **[CI](.github/workflows/ci.yml)**: `main` / `release/**` 대상 PR에서 Restore → Release Build → Test
-- **[Release](.github/workflows/package-release.yml)**: `v*.*.*` Tag Push에서 버전 설정·검증 후 NuGet / UPM Artifact 생성. GitHub Release에는 NuGet만 첨부
-- **[CD](.github/workflows/cd.yml)**: 동일 Repository의 성공한 Release Push 실행에서 해당 Run ID의 NuGet Artifact를 받아 GitHub Packages에 Publish
+## 게임 상태 · 기보 관리
 
-CD는 다시 빌드하지 않으며 `GITHUB_TOKEN`으로 인증합니다. UPM Artifact는 CD에서 처리하지 않습니다.
+[JanggiEngine](src/JanggiEngine/JanggiEngine.cs)이 Board / Rule / Turn / Record / Score를 조정합니다.
 
-[workflowConfig.json](workflowConfig.json)에서 프로젝트 경로·SDK·Artifact 이름을 관리합니다.
+- **Board / Turn**: 기물 배치와 현재 차례·대국 시간 관리
+- **Record / Score**: 이동·포획·턴 결과 기록과 점수 반영
+- **Undo**: 이전 기록을 바탕으로 보드·점수·턴 복원
+- **ReplayRecord**: 기록 탐색과 실제 대국 기록 추가를 구분
+- **GameEvents**: 처리 결과를 소비 프로젝트의 화면·게임 흐름에 전달
 
-[SetVersion.ps1](scripts/SetVersion.ps1)은 Tag 버전을 `Version.cs`, `.csproj`, `upm/package.json`에 함께 적용합니다. <br>
-Runner에서 변경한 파일은 저장소나 로컬 폴더에 자동 반영하지 않습니다.
+`GiveUp`은 기권 결과를 생성하며, `EndEngine`은 외부에서 확정한 종료를 반영해 시간 진행만 멈춥니다.<br />
+실제 화면의 Live / Replay 전환은 Unity 클라이언트에서 처리합니다.
 
-MSTest는 기물 이동·궁성·장군 규칙과 이동 거부 시 상태 보존, 포획·점수·턴 전환, 무르기를 검증합니다.
+## 테스트
 
-## Project Structure
+[YuJanggi.Engine.Tests](YuJanggi.Engine.Tests)에 MSTest를 작성했습니다.
 
-```text
-src/                        # 장기 규칙, 게임 상태, 공개 계약
-upm/                        # Unity 패키지 설정과 Runtime 구성
-scripts/                    # 버전 갱신과 NuGet / UPM 패키징
-YuJanggi.Engine.Tests/       # MSTest 규칙·진행 검증
+- 기물별 이동·궁성·장군 규칙
+- 잘못된 이동 거부와 상태 보존
+- 포획·점수·턴 전환
+- 기보 기록과 무르기
+
+```bash
+dotnet test YuJanggi.Engine.slnx --configuration Release
 ```
 
-로컬 패키징은 `scripts/LocalPackage.bat`에서 Target / Version을 입력해 실행합니다. <br>
-결과물은 `artifacts/nuget`과 `artifacts/upm`에 생성합니다.
+## 패키지 배포
 
-## Related Projects
+| 단계 | GitHub Actions 구성 |
+| --- | --- |
+| [CI](.github/workflows/ci.yml) | main / release 대상 PR에서 Restore → Release Build → MSTest |
+| [Release](.github/workflows/package-release.yml) | 버전 Tag에서 검증 · NuGet / UPM 생성 · Artifact와 GitHub Release 제공 |
+| [CD](.github/workflows/cd.yml) | 성공한 Release Run의 패키지를 GitHub Packages와 npm에 배포 |
 
-- [YuJanggi.Unity](https://github.com/SeokJinYoo98/YuJanggi.Unity) — Engine을 사용하는 게임 화면·입력·AI Controller
-- [YuJanggi.Server](https://github.com/SeokJinYoo98/YuJanggi.Server) — 공용 패키지를 참조하는 연결·매칭·게임 Server
-- [YuJanggi.Protocol](https://github.com/SeokJinYoo98/YuJanggi.Protocol) — 클라이언트·서버 공유 메시지 계약
+CD는 패키지를 다시 빌드하지 않으며 npm 배포에는 Trusted Publishing을 사용합니다.<br />
+[SetVersion.ps1](scripts/SetVersion.ps1)이 Tag 버전을 `Version.cs`, `.csproj`, `upm/package.json`에 함께 적용합니다. Runner의 변경은 저장소에 자동 커밋하지 않습니다.
 
+프로젝트 경로·SDK·Artifact 이름은 [workflowConfig.json](workflowConfig.json)에서 관리합니다.<br />
+로컬 패키징은 `scripts/LocalPackage.bat`에서 Target / Version을 입력하며, 결과는 `artifacts/nuget`과 `artifacts/upm`에 생성합니다.
+
+## 관련 저장소 · 문서
+
+- [YuJanggi.Unity](https://github.com/SeokJinYoo98/YuJanggi.Unity) — Engine 기반 게임 화면·입력·AI 전략·기보 재생
+- [YuJanggi.Protocol](https://github.com/SeokJinYoo98/YuJanggi.Protocol) — 클라이언트·서버 공용 메시지 계약
+- [YuJanggi.Server](https://github.com/SeokJinYoo98/YuJanggi.Server) — AWS EC2 기반 TCP 서버. 현재 Engine 공용 타입·버전을 사용하며 규칙 검증 연동은 향후 과제
